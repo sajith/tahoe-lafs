@@ -40,6 +40,7 @@ jobs:
           pip list
           pip install --upgrade codecov tox setuptools
           pip list
+          python misc/build_helpers/show-tool-versions.py
 
       - name: Run tox
         run: tox
