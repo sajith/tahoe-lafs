@@ -35,3 +35,5 @@ jobs:
       - name: Display OS version
         run: python -c "import platform; print(platform.platform())"
 
+      - name: Run tox
+        run: tox
