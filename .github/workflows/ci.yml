@@ -35,7 +35,7 @@ jobs:
       - name: Display OS version
         run: python -c "import platform; print(platform.platform())"
 
-      - name: Set up virtualenv
+      - name: Install Python packages
         run: |
           pip list
           pip install --upgrade codecov tox setuptools
