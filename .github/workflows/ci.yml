@@ -37,9 +37,9 @@ jobs:
 
       - name: Set up virtualenv
         run: |
-          pip list --no-python-version-warning
-          pip install --no-python-version-warning --upgrade codecov tox setuptools
-          pip list --no-python-version-warning
+          pip list
+          pip install --upgrade codecov tox setuptools
+          pip list
           python misc/build_helpers/show-tool-versions.py
 
       - name: Run tox
