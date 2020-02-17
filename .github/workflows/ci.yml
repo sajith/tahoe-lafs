@@ -37,7 +37,9 @@ jobs:
 
       - name: Set up virtualenv
         run: |
+          pip list
           pip install --user --upgrade codecov tox setuptools
+          pip list
 
       - name: Run tox
         run: tox
