@@ -37,9 +37,8 @@ jobs:
 
       - name: Install Python packages
         run: |
-          virtualenv venv
-          venv/bin/pip install --upgrade codecov tox setuptools
-          venv/bin/pip list
+          pip install --upgrade codecov tox setuptools
+          pip list
 
       - name: Display tool versions
         run: python misc/build_helpers/show-tool-versions.py
