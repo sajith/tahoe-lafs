@@ -40,10 +40,6 @@ jobs:
           pip list
           pip install --upgrade codecov tox setuptools
           pip list
-          echo $PATH
-          which python
-          which pip
-          which tox
 
       - name: Run tox
         run: tox
