@@ -43,4 +43,4 @@ jobs:
         run: python misc/build_helpers/show-tool-versions.py
 
       - name: Run tox
-        run: tox
+        run: tox -e py27,py27-coverage,pyinstaller
