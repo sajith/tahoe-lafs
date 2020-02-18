@@ -20,6 +20,8 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
+        compiler:
+          - gcc
         python-version:
           - 2.7
     steps:
@@ -42,7 +44,9 @@ jobs:
           pip list
 
       - name: Display tool versions
-        run: python misc/build_helpers/show-tool-versions.py
+        run: |
+          python misc/build_helpers/show-tool-versions.py
+          cc --version
 
       - name: Run tox
         run: tox -e py27,py27-coverage,pyinstaller
