@@ -31,7 +31,7 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
 
-      - name: Display OS version
+      - name: Display platform version
         run: python -c "import platform; print(platform.platform())"
 
       - name: Install Python packages
