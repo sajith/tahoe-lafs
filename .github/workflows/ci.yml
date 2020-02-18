@@ -40,6 +40,9 @@ jobs:
           - name: windows-latest-cl
             os: windows-latest
             compiler: cl
+            uses: "crazy-max/ghaction-chocolatey@v1"
+              with:
+                args: "install vcpython27"
 
     steps:
       - uses: actions/checkout@v2
