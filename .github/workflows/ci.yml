@@ -37,6 +37,7 @@ jobs:
       - name: Install Python packages
         run: |
           pip install --upgrade codecov tox setuptools
+          pip install .
           pip list
 
       - name: Display tool versions
