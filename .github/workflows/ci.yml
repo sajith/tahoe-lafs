@@ -52,7 +52,6 @@ jobs:
         run: |
           python -c "import sys; print(sys.version)"
           python -c "import platform; print(platform.platform())"
-          cc --version
 
       - name: Install Python packages
         run: |
