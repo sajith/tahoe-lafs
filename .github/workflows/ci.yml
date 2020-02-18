@@ -16,7 +16,7 @@ jobs:
       max-parallel: 5
       matrix:
         os:
-          - ubuntu-latest
+          # - ubuntu-latest
           - macos-latest
         python-version:
           - 2.7
