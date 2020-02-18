@@ -22,9 +22,6 @@ jobs:
           - 2.7
     steps:
       - uses: actions/checkout@v2
-
-      - continue-on-error: true
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
@@ -46,4 +43,5 @@ jobs:
         run: python misc/build_helpers/show-tool-versions.py
 
       - name: Run tox
+        continue-on-error: true
         run: tox -e py27,py27-coverage,pyinstaller
