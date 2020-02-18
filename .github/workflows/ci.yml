@@ -16,12 +16,31 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-        os:
+        name:
           - ubuntu-latest
-          - macos-latest
-          - windows-latest
+          - macos-latest-gcc
+          - macos-latest-xcode
+          - windows-latest-cl
+
         python-version:
           - 2.7
+
+        include:
+          - name: ubuntu-latest
+            os: ubuntu-latest
+
+          - name: macos-latest-gcc
+            os: macos-latest
+            compiler: gcc
+
+          - name: macos-latest-xcode
+            os: macos-latest
+            compiler: xcode
+
+          - name: windows-latest-cl
+            os: windows-latest
+            compiler:‌ cl
+
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
