@@ -39,7 +39,7 @@ jobs:
 
           - name: windows-latest-cl
             os: windows-latest
-            compiler:‌ cl
+            compiler: cl
 
     steps:
       - uses: actions/checkout@v2
