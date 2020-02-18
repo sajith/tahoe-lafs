@@ -31,11 +31,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-
-      - name: Display platform version
-        run: python -c "import platform; print(platform.platform())"
+      - name: Display Python, platform, and compiler versions
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -c "import platform; print(platform.platform())"
+          cc --version
 
       - name: Install Python packages
         run: |
@@ -46,7 +46,6 @@ jobs:
       - name: Display tool versions
         run: |
           python misc/build_helpers/show-tool-versions.py
-          cc --version
 
       - name: Run tox
         run: tox -e py27,py27-coverage,pyinstaller
