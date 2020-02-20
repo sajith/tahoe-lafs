@@ -10,7 +10,7 @@ on:
     - cron: '21 3 * * *'
 
 jobs:
-  run-tests:
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
