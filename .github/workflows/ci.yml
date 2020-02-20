@@ -42,7 +42,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Display Python, platform, and compiler versions
+      - name: Display Python and platform versions
         run: |
           python -c "import sys; print(sys.version)"
           python -c "import platform; print(platform.platform())"
