@@ -56,9 +56,8 @@ jobs:
         if: matrix.python-version == '2.7'
         run: tox -e py27
 
-      - name: Run tox -e py27-coverage
-        if: matrix.python-version == '2.7'
-        run: tox -e py27-coverage
+      - name: Run tox -e coverage
+        run: tox -e coverage
 
       - name: Run tox -e pyinstaller
         run: tox -e pyinstaller
