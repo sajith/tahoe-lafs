@@ -25,8 +25,9 @@ jobs:
 
     steps:
 
-      # Get MSVC 9.0 (Visual Studio 2008) on Windows, required to
-      # build zfec Python 2.7 extension.
+      # Get vcpython27 on Windows + Python 2.7, to build zfec
+      # extension.  See https://chocolatey.org/packages/vcpython27 and
+      # https://github.com/crazy-max/ghaction-chocolatey
       - name: Install MSVC 9.0 for Python 2.7 on Windows
         uses: "crazy-max/ghaction-chocolatey@v1"
         if: matrix.os == 'windows-latest' && matrix.python-version == '2.7'
