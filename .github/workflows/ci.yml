@@ -29,8 +29,8 @@ jobs:
       # extension.  See https://chocolatey.org/packages/vcpython27 and
       # https://github.com/crazy-max/ghaction-chocolatey
       - name: Install MSVC 9.0 for Python 2.7 on Windows
-        uses: "crazy-max/ghaction-chocolatey@v1"
         if: matrix.os == 'windows-latest' && matrix.python-version == '2.7'
+        uses: "crazy-max/ghaction-chocolatey@v1"
         with:
           args: "install vcpython27"
 
