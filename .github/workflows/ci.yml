@@ -54,7 +54,9 @@ jobs:
         with:
           args: "install vcpython27"
 
-      - uses: actions/checkout@v2
+      - name: Check out Tahoe-LAFS sources
+        uses: actions/checkout@v2
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
