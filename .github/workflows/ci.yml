@@ -21,7 +21,6 @@ jobs:
           - windows-latest
         python-version:
           - 2.7
-          # - pypy2
 
     steps:
 
@@ -61,14 +60,6 @@ jobs:
       - name: Run tox -e py27-coverage
         if: matrix.python-version == '2.7'
         run: tox -e py27-coverage
-
-      # - name: Run tox -e pypy27
-      #   if: matrix.python-version == 'pypy2'
-      #   run: tox -e pypy27
-
-      # - name: Run tox -e pypy27-coverage
-      #   if: matrix.python-version == 'pypy2'
-      #   run: tox -e pypy27-coverage
 
       - name: Run tox -e pyinstaller
         run: tox -e pyinstaller
