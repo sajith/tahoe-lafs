@@ -29,7 +29,7 @@ jobs:
       # build zfec Python 2.7 extension.
       - name: Install MSVC 9.0 for Python 2.7 on Windows
         uses: "crazy-max/ghaction-chocolatey@v1"
-        if: ${{ matrix.os }} == 'windows-latest' and ${{ matrix.python-version }} == '2.7'
+        if: matrix.os == 'windows-latest' and matrix.python-version == '2.7'
         with:
           args: "install vcpython27"
 
