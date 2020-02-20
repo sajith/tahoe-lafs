@@ -63,3 +63,10 @@ jobs:
 
       - name: Run tox -e pyinstaller
         run: tox -e pyinstaller
+
+      - name: Upload eliot.log in case of failure
+        uses: "actions/upload-artifact@v1"
+        if: "failure()"
+        with:
+          name: "eliot.log"
+          path: "eliot.log"
