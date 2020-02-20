@@ -16,29 +16,12 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-        name:
+        os:
           - ubuntu-latest
-          - macos-latest-gcc
-          - macos-latest-xcode
-          - windows-latest-cl
-
+          - macos-latest
+          - windows-latest
         python-version:
           - 2.7
-
-        include:
-          - name: ubuntu-latest
-            os: ubuntu-latest
-
-          - name: macos-latest-gcc
-            os: macos-latest
-            compiler: gcc
-
-          - name: macos-latest-xcode
-            os: macos-latest
-            compiler: xcode
-
-          - name: windows-latest-cl
-            os: windows-latest
 
     steps:
 
