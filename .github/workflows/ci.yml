@@ -13,7 +13,6 @@ jobs:
   run-tests:
     runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 5
       fail-fast: false
       matrix:
         os:
