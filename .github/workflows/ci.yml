@@ -58,9 +58,11 @@ jobs:
           python misc/build_helpers/show-tool-versions.py
 
       - name: Run tox -e py27
+        if: matrix.python-version == '2.7'
         run: tox -e py27
 
       - name: Run tox -e py27-coverage
+        if: matrix.python-version == '2.7'
         run: tox -e py27-coverage
 
       - name: Run tox -e pyinstaller
