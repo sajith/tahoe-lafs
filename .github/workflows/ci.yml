@@ -45,6 +45,15 @@ jobs:
                 args: "install vcpython27"
 
     steps:
+
+      # Get MSVC 9.0 (Visual Studio 2008) on Windows, required to
+      # build zfec Python 2.7 extension.
+      - name: Install MSVC 9.0 for Python 2.7 on Windows
+        uses: "crazy-max/ghaction-chocolatey@v1"
+        if: ${{ matrix.os }} == 'windows-latest' and ${{ matrix.python-version }} == '2.7'
+        with:
+          args: "install vcpython27"
+
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
