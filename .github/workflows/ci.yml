@@ -52,17 +52,17 @@ jobs:
       - name: Display tool versions
         run: python misc/build_helpers/show-tool-versions.py
 
-      - name: Run tox -e codechecks
+      - name: Run "tox -e codechecks"
         run: tox -e codechecks
 
-      - name: Run tox -e py27
+      - name: Run "tox -e py27"
         if: matrix.python-version == '2.7'
         run: tox -e py27
 
-      - name: Run tox -e coverage
+      - name: Run "tox -e coverage"
         run: tox -e coverage
 
-      - name: Run tox -e pyinstaller
+      - name: Run "tox -e pyinstaller"
         run: tox -e pyinstaller
 
       - name: Upload eliot.log in case of failure
