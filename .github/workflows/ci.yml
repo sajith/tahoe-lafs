@@ -51,6 +51,13 @@ jobs:
 
       - name: Display tool versions
         run: python misc/build_helpers/show-tool-versions.py
+        
+      - name: Display environment variables
+        shell: python
+        run: |
+          import os
+          import pprint
+          pprint.pprint(dict(os.environ))   
 
       # codechecks throws type error; disable for now.
       - name: Run "tox -e codechecks"
