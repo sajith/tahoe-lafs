@@ -86,7 +86,7 @@ jobs:
       # Set Codecov token inside Project Settings > Secrets as
       # CODECOV_TOKEN.
       - name: Upload coverage report
-        if: secrets.CODECOV_TOKEN
+        if: secrets && secrets.CODECOV_TOKEN
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
