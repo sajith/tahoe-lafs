@@ -54,7 +54,8 @@ jobs:
 
       # codechecks throws type error; disable for now.
       - name: Run "tox -e codechecks"
-        env: LANG=UTF-8
+        env:
+          LANG: 'UTF-8'
         run: tox -e codechecks
 
       - name: Run "tox -e py27"
