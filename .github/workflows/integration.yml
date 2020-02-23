@@ -1,5 +1,5 @@
 # Integration tests require `tor-gencert`, so we just run them on
-# Ubuntu for now.
+# Ubuntu and macOS for now.
 
 name: Integraton tests
 
@@ -20,14 +20,19 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          - macos-latest
         python-version:
           - 2.7
 
     steps:
 
-      - name: Install tor
+      - name: Install tor [Ubuntu]
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt install tor
+
+      - name: Install tor [macOS]
+        if: matrix.os == 'macos-latest'
+        run: brew install tor
 
       - name: Check out Tahoe-LAFS sources
         uses: actions/checkout@v2
