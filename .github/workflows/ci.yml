@@ -87,7 +87,7 @@ jobs:
       # CODECOV_TOKEN.
       - name: Upload coverage report
         uses: codecov/codecov-action@v1
-        if: ${{ secrets.CODECOV_TOKEN }}
+        if: success()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage.xml
