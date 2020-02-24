@@ -99,8 +99,6 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
-          - windows-latest
           - ubuntu-latest
         python-version:
           - 2.7
@@ -109,7 +107,7 @@ jobs:
 
       - name: Install Tor [Ubuntu]
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt install tor
+        run: sudo apt install tor strace
 
       - name: Install Tor [macOS]
         if: matrix.os == 'macos-latest'
@@ -147,7 +145,7 @@ jobs:
         run: python misc/build_helpers/show-tool-versions.py
 
       - name: Run "tox -e integration"
-        run: tox -e integration
+        run: strace -f tox -e integration
 
       - name: Upload eliot.log in case of failure
         uses: actions/upload-artifact@v1
