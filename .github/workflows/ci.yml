@@ -92,15 +92,15 @@ jobs:
 
     steps:
 
-      - name: [Ubuntu] Install Tor
+      - name: Install Tor [Ubuntu]
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt install tor
 
-      - name: [macOS] Install Tor
+      - name: Install Tor [macOS]
         if: matrix.os == 'macos-latest'
         run: brew install tor
 
-      - name: [Windows] Install Tor
+      - name: Install Tor [Windows]
         if: matrix.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1
         with:
