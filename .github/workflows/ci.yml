@@ -74,11 +74,17 @@ jobs:
 
       # Set Codecov token inside Project Settings > Secrets as
       # CODECOV_TOKEN.
-      - name: Upload coverage report
+      - name: Upload coverage report to codecov.io
         uses: codecov/codecov-action@v1
+        if: success()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage.xml
+
+      - name: Upload coverage report to coveralls.io
+        if: success()
+        run: coveralls
+
 
   integration:
     runs-on: ${{ matrix.os }}
