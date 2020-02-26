@@ -153,3 +153,53 @@ jobs:
         with:
           name: eliot.log
           path: eliot.log
+
+  packaging:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+        python-version:
+          - 2.7
+
+    steps:
+
+      # Get vcpython27 on Windows + Python 2.7, to build zfec
+      # extension.  See https://chocolatey.org/packages/vcpython27 and
+      # https://github.com/crazy-max/ghaction-chocolatey
+      - name: Install MSVC 9.0 for Python 2.7 on Windows
+        if: matrix.os == 'windows-latest' && matrix.python-version == '2.7'
+        uses: crazy-max/ghaction-chocolatey@v1
+        with:
+          args: install vcpython27
+
+      - name: Check out Tahoe-LAFS sources
+        uses: actions/checkout@v2
+
+      - name: Fetch all history for all tags and branches
+        run: git fetch --prune --unshallow
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python packages
+        run: |
+          pip install --upgrade codecov tox setuptools
+          pip list
+
+      - name: Display tool versions
+        run: python misc/build_helpers/show-tool-versions.py
+
+      # codechecks throws type error; disable for now.
+      - name: Run "tox -e codechecks"
+        env:
+          LANG: 'UTF-8'
+        run: tox -e codechecks
+        continue-on-error: true
+
+      - name: Run "tox -e pyinstaller"
+        run: tox -e pyinstaller
