@@ -81,10 +81,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage.xml
 
+      # See https://github.com/coverallsapp/github-action/
       - name: Upload coverage report to coveralls.io
-        if: success()
-        run: coveralls
-
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   integration:
     runs-on: ${{ matrix.os }}
