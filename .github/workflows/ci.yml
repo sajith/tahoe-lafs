@@ -28,7 +28,7 @@ jobs:
       # Get vcpython27 on Windows + Python 2.7, to build zfec
       # extension.  See https://chocolatey.org/packages/vcpython27 and
       # https://github.com/crazy-max/ghaction-chocolatey
-      - name: Install MSVC 9.0 for Python 2.7 on Windows
+      - name: Install MSVC 9.0 for Python 2.7 [Windows]
         if: matrix.os == 'windows-latest' && matrix.python-version == '2.7'
         uses: crazy-max/ghaction-chocolatey@v1
         with:
@@ -53,29 +53,17 @@ jobs:
       - name: Display tool versions
         run: python misc/build_helpers/show-tool-versions.py
 
-      - name: Display environment variables
-        shell: python
-        run: |
-          import os
-          import pprint
-          pprint.pprint(dict(os.environ))
-
-      # codechecks throws type error; disable for now.
+      # Codechecks errors out when running Towncrier within GitHub
+      # Actions.  See this issue:
+      # https://github.com/hawkowl/towncrier/issues/175.
+      #
+      # Run codechecks anyway, and continue on error, for now.
       - name: Run "tox -e codechecks"
-        env:
-          LANG: 'UTF-8'
         run: tox -e codechecks
         continue-on-error: true
 
-      - name: Run "tox -e py27"
-        if: matrix.python-version == '2.7'
-        run: tox -e py27
-
       - name: Run "tox -e coverage"
         run: tox -e coverage
-
-      - name: Run "tox -e pyinstaller"
-        run: tox -e pyinstaller
 
       - name: Upload eliot.log in case of failure
         uses: actions/upload-artifact@v1
@@ -88,7 +76,6 @@ jobs:
       # CODECOV_TOKEN.
       - name: Upload coverage report
         uses: codecov/codecov-action@v1
-        if: success()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage.xml
@@ -105,15 +92,15 @@ jobs:
 
     steps:
 
-      - name: Install Tor [Ubuntu]
+      - name: [Ubuntu] Install Tor
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt install tor
 
-      - name: Install Tor [macOS]
+      - name: [macOS] Install Tor
         if: matrix.os == 'macos-latest'
         run: brew install tor
 
-      - name: Install Tor [Windows]
+      - name: [Windows] Install Tor
         if: matrix.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1
         with:
@@ -171,7 +158,7 @@ jobs:
       # Get vcpython27 on Windows + Python 2.7, to build zfec
       # extension.  See https://chocolatey.org/packages/vcpython27 and
       # https://github.com/crazy-max/ghaction-chocolatey
-      - name: Install MSVC 9.0 for Python 2.7 on Windows
+      - name: [Windows] Install MSVC 9.0 for Python 2.7
         if: matrix.os == 'windows-latest' && matrix.python-version == '2.7'
         uses: crazy-max/ghaction-chocolatey@v1
         with:
@@ -195,13 +182,6 @@ jobs:
 
       - name: Display tool versions
         run: python misc/build_helpers/show-tool-versions.py
-
-      # codechecks throws type error; disable for now.
-      - name: Run "tox -e codechecks"
-        env:
-          LANG: 'UTF-8'
-        run: tox -e codechecks
-        continue-on-error: true
 
       - name: Run "tox -e pyinstaller"
         run: tox -e pyinstaller
