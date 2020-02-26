@@ -93,7 +93,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage.xml
 
-  intergation:
+  integration:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
