@@ -47,7 +47,7 @@ jobs:
 
       - name: Install Python packages
         run: |
-          pip install --upgrade codecov tox setuptools
+          pip install --upgrade codecov tox setuptools coverall
           pip list
 
       - name: Display tool versions
@@ -72,20 +72,23 @@ jobs:
           name: eliot.log
           path: eliot.log
 
-      # Set Codecov token inside Project Settings > Secrets as
-      # CODECOV_TOKEN.
-      - name: Upload coverage report to codecov.io
-        uses: codecov/codecov-action@v1
-        if: success()
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage.xml
+      # # Set Codecov token inside Project Settings > Secrets as
+      # # CODECOV_TOKEN.
+      # - name: Upload coverage report to codecov.io
+      #   uses: codecov/codecov-action@v1
+      #   if: success()
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     file: coverage.xml
 
-      # See https://github.com/coverallsapp/github-action/
-      - name: Upload coverage report to coveralls.io
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run coveralls
+        run: coveralls
+
+      # # See https://github.com/coverallsapp/github-action/
+      # - name: Upload coverage report to coveralls.io
+      #   uses: coverallsapp/github-action@master
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
 
   integration:
     runs-on: ${{ matrix.os }}
