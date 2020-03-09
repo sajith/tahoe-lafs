@@ -3,7 +3,15 @@ import pprint, itertools, hashlib
 import json
 from twisted.internet import defer
 from twisted.web.resource import Resource
-from nevow import rend, tags as T
+from twisted.python.filepath import FilePath
+from twisted.web.template import (
+    Element,
+    XMLFile,
+    tags as T,
+    renderer,
+    renderElement
+)
+
 from allmydata.util import base32, idlib
 from allmydata.web.common import (
     getxmlfile,
@@ -13,7 +21,7 @@ from allmydata.web.common import (
     plural,
     compute_rate,
     render_time,
-    MultiFormatPage,
+    MultiFormatResource,
 )
 from allmydata.interfaces import IUploadStatus, IDownloadStatus, \
      IPublishStatus, IRetrieveStatus, IServermapUpdaterStatus
@@ -151,7 +159,7 @@ class UploadResultsRendererMixin(RateAndTimeMixin):
         d.addCallback(_convert)
         return d
 
-class UploadStatusPage(UploadResultsRendererMixin, rend.Page):
+class UploadStatusPage(UploadResultsRendererMixin):
     docFactory = getxmlfile("upload-status.xhtml")
 
     def __init__(self, data):
@@ -480,7 +488,7 @@ class _EventJson(Resource, object):
         return json.dumps(data, indent=1) + "\n"
 
 
-class DownloadStatusPage(DownloadResultsRendererMixin, rend.Page):
+class DownloadStatusPage(DownloadResultsRendererMixin):
     docFactory = getxmlfile("download-status.xhtml")
 
     def __init__(self, data):
@@ -664,7 +672,7 @@ class DownloadStatusPage(DownloadResultsRendererMixin, rend.Page):
     def render_status(self, ctx, data):
         return data.get_status()
 
-class RetrieveStatusPage(rend.Page, RateAndTimeMixin):
+class RetrieveStatusPage(RateAndTimeMixin):
     docFactory = getxmlfile("retrieve-status.xhtml")
 
     def __init__(self, data):
@@ -750,7 +758,7 @@ class RetrieveStatusPage(rend.Page, RateAndTimeMixin):
         return T.li["Per-Server Fetch Response Times: ", l]
 
 
-class PublishStatusPage(rend.Page, RateAndTimeMixin):
+class PublishStatusPage(RateAndTimeMixin):
     docFactory = getxmlfile("publish-status.xhtml")
 
     def __init__(self, data):
@@ -859,7 +867,7 @@ class PublishStatusPage(rend.Page, RateAndTimeMixin):
             l[T.li["[%s]: %s" % (server.get_name(), times_s)]]
         return T.li["Per-Server Response Times: ", l]
 
-class MapupdateStatusPage(rend.Page, RateAndTimeMixin):
+class MapupdateStatusPage(RateAndTimeMixin):
     docFactory = getxmlfile("map-update-status.xhtml")
 
     def __init__(self, data):
@@ -981,13 +989,17 @@ def marshal_json(s):
     return item
 
 
-class Status(MultiFormatPage):
+class Status(MultiFormatResource):
     docFactory = getxmlfile("status.xhtml")
     addSlash = True
 
     def __init__(self, history):
-        rend.Page.__init__(self, history)
+        # rend.Page.__init__(self, history)
+        super(Status, self).__init__()
         self.history = history
+
+    def render_HTML(self, req):
+        return renderElement(req, StatusElement(self.history))
 
     def render_JSON(self, req):
         # modern browsers now render this instead of forcing downloads
@@ -1003,6 +1015,14 @@ class Status(MultiFormatPage):
             recent.append(marshal_json(s))
 
         return json.dumps(data, indent=1) + "\n"
+
+class StatusElement(Element):
+
+    loader = XMLFile(FilePath(__file__).sibling("status.xhtml"))
+
+    def __init__(self, history):
+        super(StatusElement, self).__init__()
+        self.history = history
 
     def _get_all_statuses(self):
         h = self.history
@@ -1121,7 +1141,7 @@ class Status(MultiFormatPage):
                     return RetrieveStatusPage(s)
 
 
-class HelperStatus(MultiFormatPage):
+class HelperStatus(MultiFormatResource):
     docFactory = getxmlfile("helper.xhtml")
 
     def __init__(self, helper):
@@ -1165,17 +1185,27 @@ class HelperStatus(MultiFormatPage):
         return str(data["chk_upload_helper.encoded_bytes"])
 
 
-class Statistics(MultiFormatPage):
-    docFactory = getxmlfile("statistics.xhtml")
+class Statistics(MultiFormatResource):
 
     def __init__(self, provider):
-        rend.Page.__init__(self, provider)
+        super(Statistics, self).__init__()
         self.provider = provider
+
+    def render_HTML(self, req):
+        return renderElement(req, StatsticsElement(self.provider))
 
     def render_JSON(self, req):
         stats = self.provider.get_stats()
         req.setHeader("content-type", "text/plain")
         return json.dumps(stats, indent=1) + "\n"
+
+class StatsticsElement(Element):
+
+    loader = XMLFile(FilePath(__file__).sibling("statistics.xhtml"))
+
+    def __init__(self, provider):
+        super(StatsticsElement, self).__init__()
+        self.provider = provider
 
     def data_get_stats(self, ctx, data):
         return self.provider.get_stats()
