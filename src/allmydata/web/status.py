@@ -1189,87 +1189,121 @@ class Statistics(MultiFormatResource):
 
     def __init__(self, provider):
         super(Statistics, self).__init__()
-        self.provider = provider
+        self._provider = provider
 
     def render_HTML(self, req):
-        return renderElement(req, StatsticsElement(self.provider))
+        return renderElement(req, StatisticsElement(self._provider))
 
     def render_JSON(self, req):
-        stats = self.provider.get_stats()
+        stats = self._provider.get_stats()
         req.setHeader("content-type", "text/plain")
         return json.dumps(stats, indent=1) + "\n"
 
-class StatsticsElement(Element):
+class StatisticsElement(Element):
 
     loader = XMLFile(FilePath(__file__).sibling("statistics.xhtml"))
 
     def __init__(self, provider):
-        super(StatsticsElement, self).__init__()
-        self.provider = provider
+        super(StatisticsElement, self).__init__()
 
-    def data_get_stats(self, ctx, data):
-        return self.provider.get_stats()
+        # provider.get_stats() returns a dict of the below form, for
+        # example (there's often more data than this):
+        #
+        #  {
+        #    'stats': {
+        #      'storage_server.disk_used': 809601609728,
+        #      'storage_server.accepting_immutable_shares': 1,
+        #      'storage_server.disk_free_for_root': 131486851072,
+        #      'storage_server.reserved_space': 1000000000,
+        #      'node.uptime': 0.16520118713378906,
+        #      'storage_server.disk_total': 941088460800,
+        #      'cpu_monitor.total': 0.004513999999999907,
+        #      'storage_server.disk_avail': 82610759168,
+        #      'storage_server.allocated': 0,
+        #      'storage_server.disk_free_for_nonroot': 83610759168 },
+        #    'counters': {
+        #      'uploader.files_uploaded': 0,
+        #      'uploader.bytes_uploaded': 0,
+        #       ... }
+        #  }
+        #
+        # `counters` can be empty.
+        self._stats = provider.get_stats()
 
-    def render_load_average(self, ctx, data):
-        return str(data["stats"].get("load_monitor.avg_load"))
+    @renderer
+    def load_average(self, req, tag):
+        return str(self._stats["stats"].get("load_monitor.avg_load"))
 
-    def render_peak_load(self, ctx, data):
-        return str(data["stats"].get("load_monitor.max_load"))
+    @renderer
+    def peak_load(self, req, tag):
+        return str(self._stats["stats"].get("load_monitor.max_load"))
 
-    def render_uploads(self, ctx, data):
-        files = data["counters"].get("uploader.files_uploaded", 0)
-        bytes = data["counters"].get("uploader.bytes_uploaded", 0)
+    @renderer
+    def uploads(self, req, tag):
+        files = self._stats["counters"].get("uploader.files_uploaded", 0)
+        bytes = self._stats["counters"].get("uploader.bytes_uploaded", 0)
         return ("%s files / %s bytes (%s)" %
                 (files, bytes, abbreviate_size(bytes)))
 
-    def render_downloads(self, ctx, data):
-        files = data["counters"].get("downloader.files_downloaded", 0)
-        bytes = data["counters"].get("downloader.bytes_downloaded", 0)
+    @renderer
+    def downloads(self, req, tag):
+        files = self._stats["counters"].get("downloader.files_downloaded", 0)
+        bytes = self._stats["counters"].get("downloader.bytes_downloaded", 0)
         return ("%s files / %s bytes (%s)" %
                 (files, bytes, abbreviate_size(bytes)))
 
-    def render_publishes(self, ctx, data):
-        files = data["counters"].get("mutable.files_published", 0)
-        bytes = data["counters"].get("mutable.bytes_published", 0)
+    @renderer
+    def publishes(self, req, tag):
+        files = self._stats["counters"].get("mutable.files_published", 0)
+        bytes = self._stats["counters"].get("mutable.bytes_published", 0)
         return "%s files / %s bytes (%s)" % (files, bytes,
                                              abbreviate_size(bytes))
 
-    def render_retrieves(self, ctx, data):
-        files = data["counters"].get("mutable.files_retrieved", 0)
-        bytes = data["counters"].get("mutable.bytes_retrieved", 0)
+    @renderer
+    def retrieves(self, req, tag):
+        files = self._stats["counters"].get("mutable.files_retrieved", 0)
+        bytes = self._stats["counters"].get("mutable.bytes_retrieved", 0)
         return "%s files / %s bytes (%s)" % (files, bytes,
                                              abbreviate_size(bytes))
 
-    def render_magic_uploader_monitored(self, ctx, data):
-        dirs = data["counters"].get("magic_folder.uploader.dirs_monitored", 0)
+    @renderer
+    def magic_uploader_monitored(self, req, tag):
+        dirs = self._stats["counters"].get("magic_folder.uploader.dirs_monitored", 0)
         return "%s directories" % (dirs,)
 
-    def render_magic_uploader_succeeded(self, ctx, data):
+    @renderer
+    def magic_uploader_succeeded(self, req, tag):
         # TODO: bytes uploaded
-        files = data["counters"].get("magic_folder.uploader.objects_succeeded", 0)
+        files = self._stats["counters"].get("magic_folder.uploader.objects_succeeded", 0)
         return "%s files" % (files,)
 
-    def render_magic_uploader_queued(self, ctx, data):
-        files = data["counters"].get("magic_folder.uploader.objects_queued", 0)
+    @renderer
+    def magic_uploader_queued(self, req, tag):
+        files = self._stats["counters"].get("magic_folder.uploader.objects_queued", 0)
         return "%s files" % (files,)
 
-    def render_magic_uploader_failed(self, ctx, data):
-        files = data["counters"].get("magic_folder.uploader.objects_failed", 0)
+    @renderer
+    def magic_uploader_failed(self, req, tag):
+        files = self._stats["counters"].get("magic_folder.uploader.objects_failed", 0)
         return "%s files" % (files,)
 
-    def render_magic_downloader_succeeded(self, ctx, data):
+    @renderer
+    def magic_downloader_succeeded(self, req, tag):
         # TODO: bytes uploaded
-        files = data["counters"].get("magic_folder.downloader.objects_succeeded", 0)
+        files = self._stats["counters"].get("magic_folder.downloader.objects_succeeded", 0)
         return "%s files" % (files,)
 
-    def render_magic_downloader_queued(self, ctx, data):
-        files = data["counters"].get("magic_folder.downloader.objects_queued", 0)
+    @renderer
+    def magic_downloader_queued(self, req, tag):
+        files = self._stats["counters"].get("magic_folder.downloader.objects_queued", 0)
         return "%s files" % (files,)
 
-    def render_magic_downloader_failed(self, ctx, data):
-        files = data["counters"].get("magic_folder.downloader.objects_failed", 0)
+    @renderer
+    def magic_downloader_failed(self, req, tag):
+        files = self._stats["counters"].get("magic_folder.downloader.objects_failed", 0)
         return "%s files" % (files,)
 
-    def render_raw(self, ctx, data):
-        raw = pprint.pformat(data)
-        return ctx.tag[raw]
+    @renderer
+    def raw(self, req, tag):
+        raw = pprint.pformat(self._stats)
+        return tag(raw)
