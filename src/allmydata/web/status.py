@@ -1166,6 +1166,10 @@ class HelperStatusElement(Element):
         :param _allmydata.immutable.offloaded.Helper helper
         """
         super(HelperElement, self).__init__()
+        self._helper = helper
+
+    @renderer
+    def helper_running(self, req, tag):
         # helper.get_stats() returns a dict of this form:
         #
         #   {'chk_upload_helper.active_uploads': 0,
@@ -1182,7 +1186,11 @@ class HelperStatusElement(Element):
         #    'chk_upload_helper.upload_need_upload': 0,
         #    'chk_upload_helper.upload_requests': 0}
         #
-        self._data = helper.get_stats()
+        # If helper is running, we render the above data on the page.
+        if self._helper:
+            self._data = self._helper.get_stats()
+            return tag
+        return T.h1("No helper is running")
 
     @renderer
     def active_uploads(self, req, tag):
