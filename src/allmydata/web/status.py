@@ -1026,6 +1026,39 @@ class Status(MultiFormatResource):
 
         return json.dumps(data, indent=1) + "\n"
 
+    def childFactory(self, ctx, name):
+        h = self.history
+        try:
+            stype, count_s = name.split("-")
+        except ValueError:
+            raise RuntimeError(
+                "no - in '{}'".format(name)
+            )
+        count = int(count_s)
+        if stype == "up":
+            for s in itertools.chain(h.list_all_upload_statuses(),
+                                     h.list_all_helper_statuses()):
+                # immutable-upload helpers use the same status object as a
+                # regular immutable-upload
+                if s.get_counter() == count:
+                    return UploadStatusPage(s)
+        if stype == "down":
+            for s in h.list_all_download_statuses():
+                if s.get_counter() == count:
+                    return DownloadStatusPage(s)
+        if stype == "mapupdate":
+            for s in h.list_all_mapupdate_statuses():
+                if s.get_counter() == count:
+                    return MapupdateStatusPage(s)
+        if stype == "publish":
+            for s in h.list_all_publish_statuses():
+                if s.get_counter() == count:
+                    return PublishStatusPage(s)
+        if stype == "retrieve":
+            for s in h.list_all_retrieve_statuses():
+                if s.get_counter() == count:
+                    return RetrieveStatusPage(s)
+
     def _get_all_statuses(self):
         h = self.history
         return itertools.chain(h.list_all_upload_statuses(),
@@ -1126,40 +1159,6 @@ class StatusElement(Element):
         result.update({"status": T.a(op.get_status(), href=link)})
 
         return result
-
-    def childFactory(self, ctx, name):
-        h = self.history
-        try:
-            stype, count_s = name.split("-")
-        except ValueError:
-            raise RuntimeError(
-                "no - in '{}'".format(name)
-            )
-        count = int(count_s)
-        if stype == "up":
-            for s in itertools.chain(h.list_all_upload_statuses(),
-                                     h.list_all_helper_statuses()):
-                # immutable-upload helpers use the same status object as a
-                # regular immutable-upload
-                if s.get_counter() == count:
-                    return UploadStatusPage(s)
-        if stype == "down":
-            for s in h.list_all_download_statuses():
-                if s.get_counter() == count:
-                    return DownloadStatusPage(s)
-        if stype == "mapupdate":
-            for s in h.list_all_mapupdate_statuses():
-                if s.get_counter() == count:
-                    return MapupdateStatusPage(s)
-        if stype == "publish":
-            for s in h.list_all_publish_statuses():
-                if s.get_counter() == count:
-                    return PublishStatusPage(s)
-        if stype == "retrieve":
-            for s in h.list_all_retrieve_statuses():
-                if s.get_counter() == count:
-                    return RetrieveStatusPage(s)
-
 
 #------------------------------------------------------------------------
 
