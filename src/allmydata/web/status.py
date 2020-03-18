@@ -998,10 +998,8 @@ def marshal_json(s):
 
 # Renders "/status" page
 class Status(MultiFormatResource):
-    docFactory = getxmlfile("status.xhtml")
 
     def __init__(self, history):
-        # rend.Page.__init__(self, history)
         super(Status, self).__init__()
         self.history = history
 
