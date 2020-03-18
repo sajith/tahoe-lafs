@@ -1188,7 +1188,7 @@ class HelperStatusElement(Element):
         """
         :param _allmydata.immutable.offloaded.Helper helper
         """
-        super(HelperElement, self).__init__()
+        super(HelperStatusElement, self).__init__()
         self._helper = helper
 
     @renderer
