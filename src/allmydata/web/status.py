@@ -613,7 +613,7 @@ class DownloadStatusElement(RateAndTimeMixin, Element):
 
             t(T.tr(T.td("[%d:+%d]" % (start, length)),
                    T.td(srt(r_ev["start_time"])), T.td(srt(r_ev["finish_time"])),
-                   T.td(bytes), T.td(rtt),
+                   T.td(str(bytes)), T.td(rtt),
                    T.td(decrypt_time), T.td(paused),
                    T.td(speed),
                    ))
@@ -666,10 +666,10 @@ class DownloadStatusElement(RateAndTimeMixin, Element):
                 rtt = r_ev["finish_time"] - r_ev["start_time"]
             color = _color(server)
             t(T.tr(style="background: %s" % color)(
-                T.td(server.get_name()), T.td(r_ev["shnum"]),
+                T.td(server.get_name()), T.td(str(r_ev["shnum"])),
                 T.td("[%d:+%d]" % (r_ev["start"], r_ev["length"])),
                 T.td(srt(r_ev["start_time"])), T.td(srt(r_ev["finish_time"])),
-                T.td(r_ev["response_length"] or ""),
+                T.td(str(r_ev["response_length"] or "")),
                 T.td(self.render_time(None, rtt)),
                 ))
 
@@ -709,7 +709,7 @@ class DownloadStatusElement(RateAndTimeMixin, Element):
         size = self.download_status.get_size()
         if size is None:
             return "(unknown)"
-        return size
+        return str(size)
 
     @renderer
     def progress(self, req, tag):
