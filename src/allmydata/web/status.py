@@ -22,6 +22,7 @@ from allmydata.web.common import (
     compute_rate,
     render_time,
     MultiFormatResource,
+    SlotsSequenceElement,
 )
 from allmydata.interfaces import IUploadStatus, IDownloadStatus, \
      IPublishStatus, IRetrieveStatus, IServermapUpdaterStatus
@@ -999,7 +1000,9 @@ class Status(MultiFormatResource):
         self.history = history
 
     def render_HTML(self, req):
-        return renderElement(req, StatusElement(self.history))
+        elem = StatusElement(self._get_active_operations(),
+                             self._get_recent_operations())
+        return renderElement(req, elem)
 
     def render_JSON(self, req):
         # modern browsers now render this instead of forcing downloads
@@ -1016,14 +1019,6 @@ class Status(MultiFormatResource):
 
         return json.dumps(data, indent=1) + "\n"
 
-class StatusElement(Element):
-
-    loader = XMLFile(FilePath(__file__).sibling("status.xhtml"))
-
-    def __init__(self, history):
-        super(StatusElement, self).__init__()
-        self.history = history
-
     def _get_all_statuses(self):
         h = self.history
         return itertools.chain(h.list_all_upload_statuses(),
@@ -1034,8 +1029,13 @@ class StatusElement(Element):
                                h.list_all_helper_statuses(),
                                )
 
-    def data_active_operations(self, ctx, data):
-        return self._get_active_operations()
+    def _get_recent_operations(self):
+        recent = [s
+                  for s in self._get_all_statuses()
+                  if not s.get_active()]
+        recent.sort(lambda a, b: cmp(a.get_started(), b.get_started()))
+        recent.reverse()
+        return recent
 
     def _get_active_operations(self):
         active = [s
@@ -1045,67 +1045,80 @@ class StatusElement(Element):
         active.reverse()
         return active
 
-    def data_recent_operations(self, ctx, data):
-        return self._get_recent_operations()
+class StatusElement(Element):
 
-    def _get_recent_operations(self):
-        recent = [s
-                  for s in self._get_all_statuses()
-                  if not s.get_active()]
-        recent.sort(lambda a, b: cmp(a.get_started(), b.get_started()))
-        recent.reverse()
-        return recent
+    loader = XMLFile(FilePath(__file__).sibling("status.xhtml"))
 
-    def render_row(self, ctx, data):
-        s = data
+    def __init__(self, active, recent):
+        super(StatusElement, self).__init__()
+        self._active = active
+        self._recent = recent
 
-        started_s = render_time(s.get_started())
-        ctx.fillSlots("started", started_s)
+    @renderer
+    def active_operations(self, req, tag):
+        active = [self.get_op_state(op) for op in self._active]
+        return SlotsSequenceElement(tag, active)
 
-        si_s = base32.b2a_or_none(s.get_storage_index())
+    @renderer
+    def recent_operations(self, req, tag):
+        active = [self.get_op_state(op) for op in self._recent]
+        return SlotsSequenceElement(tag, active)
+
+    @staticmethod
+    def get_op_state(op):
+        result = dict()
+
+        started_s = render_time(op.get_started())
+        result.update({"started": started_s})
+
+        si_s = base32.b2a_or_none(op.get_storage_index())
         if si_s is None:
             si_s = "(None)"
-        ctx.fillSlots("si", si_s)
-        ctx.fillSlots("helper", {True: "Yes",
-                                 False: "No"}[s.using_helper()])
 
-        size = s.get_size()
+        result.update({"si": si_s})
+        result.update({"helper":
+                       {True: "Yes", False: "No"}[op.using_helper()]})
+
+        size = op.get_size()
         if size is None:
             size = "(unknown)"
         elif isinstance(size, (int, long, float)):
             size = abbreviate_size(size)
-        ctx.fillSlots("total_size", size)
 
-        progress = data.get_progress()
-        if IUploadStatus.providedBy(data):
-            link = "up-%d" % data.get_counter()
-            ctx.fillSlots("type", "upload")
+        result.update({"total_size": size})
+
+        progress = op.get_progress()
+        if IUploadStatus.providedBy(op):
+            link = "up-%d" % op.get_counter()
+            result.update({"type": "upload"})
             # TODO: make an ascii-art bar
             (chk, ciphertext, encandpush) = progress
             progress_s = ("hash: %.1f%%, ciphertext: %.1f%%, encode: %.1f%%" %
-                          ( (100.0 * chk),
-                            (100.0 * ciphertext),
-                            (100.0 * encandpush) ))
-            ctx.fillSlots("progress", progress_s)
-        elif IDownloadStatus.providedBy(data):
-            link = "down-%d" % data.get_counter()
-            ctx.fillSlots("type", "download")
-            ctx.fillSlots("progress", "%.1f%%" % (100.0 * progress))
-        elif IPublishStatus.providedBy(data):
-            link = "publish-%d" % data.get_counter()
-            ctx.fillSlots("type", "publish")
-            ctx.fillSlots("progress", "%.1f%%" % (100.0 * progress))
-        elif IRetrieveStatus.providedBy(data):
-            ctx.fillSlots("type", "retrieve")
-            link = "retrieve-%d" % data.get_counter()
-            ctx.fillSlots("progress", "%.1f%%" % (100.0 * progress))
+                          ((100.0 * chk),
+                           (100.0 * ciphertext),
+                           (100.0 * encandpush)))
+            result.update({"progress": progress_s})
+        elif IDownloadStatus.providedBy(op):
+            link = "down-%d" % op.get_counter()
+            result.update({"type": "download"})
+            result.update({"progress": "%.1f%%" % (100.0 * progress)})
+        elif IPublishStatus.providedBy(op):
+            link = "publish-%d" % op.get_counter()
+            result.update({"type": "publish"})
+            result.update({"progress": "%.1f%%" % (100.0 * progress)})
+        elif IRetrieveStatus.providedBy(op):
+            result.update({"type": "retrieve"})
+            link = "retrieve-%d" % op.get_counter()
+            result.update({"progress": "%.1f%%" % (100.0 * progress)})
         else:
-            assert IServermapUpdaterStatus.providedBy(data)
-            ctx.fillSlots("type", "mapupdate %s" % data.get_mode())
-            link = "mapupdate-%d" % data.get_counter()
-            ctx.fillSlots("progress", "%.1f%%" % (100.0 * progress))
-        ctx.fillSlots("status", T.a(href=link)[s.get_status()])
-        return ctx.tag
+            assert IServermapUpdaterStatus.providedBy(op)
+            result.update({"type": "mapupdate %s" % op.get_mode()})
+            link = "mapupdate-%d" % op.get_counter()
+            result.update({"progress": "%.1f%%" % (100.0 * progress)})
+
+        result.update({"status": T.a(op.get_status(), href=link)})
+
+        return result
 
     def childFactory(self, ctx, name):
         h = self.history
