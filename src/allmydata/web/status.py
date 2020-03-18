@@ -222,10 +222,13 @@ class UploadStatusPage(UploadResultsRendererMixin):
     def render_status(self, ctx, data):
         return data.get_status()
 
+#------------------------------------------------------------------------
+
 class DownloadResultsRendererMixin(RateAndTimeMixin):
     # this requires a method named 'download_results'
 
-    def render_servermap(self, ctx, data):
+    @renderer
+    def render_servermap(self, req, tag):
         d = self.download_results()
         d.addCallback(lambda res: res.servermap)
         def _render(servermap):
@@ -236,14 +239,15 @@ class DownloadResultsRendererMixin(RateAndTimeMixin):
                 peerid_s = idlib.shortnodeid_b2a(peerid)
                 shares_s = ",".join(["#%d" % shnum
                                      for shnum in servermap[peerid]])
-                l[T.li["[%s] has share%s: %s" % (peerid_s,
+                l(T.li("[%s] has share%s: %s" % (peerid_s,
                                                  plural(servermap[peerid]),
-                                                 shares_s)]]
+                                                 shares_s)))
             return l
         d.addCallback(_render)
         return d
 
-    def render_servers_used(self, ctx, data):
+    @renderer
+    def servers_used(self, req, tag):
         d = self.download_results()
         d.addCallback(lambda res: res.servers_used)
         def _got(servers_used):
@@ -251,11 +255,12 @@ class DownloadResultsRendererMixin(RateAndTimeMixin):
                 return ""
             peerids_s = ", ".join(["[%s]" % idlib.shortnodeid_b2a(peerid)
                                    for peerid in servers_used])
-            return T.li["Servers Used: ", peerids_s]
+            return T.li("Servers Used: ", peerids_s)
         d.addCallback(_got)
         return d
 
-    def render_problems(self, ctx, data):
+    @renderer
+    def problems(self, req, tag):
         d = self.download_results()
         d.addCallback(lambda res: res.server_problems)
         def _got(server_problems):
@@ -264,12 +269,13 @@ class DownloadResultsRendererMixin(RateAndTimeMixin):
             l = T.ul()
             for peerid in sorted(server_problems.keys()):
                 peerid_s = idlib.shortnodeid_b2a(peerid)
-                l[T.li["[%s]: %s" % (peerid_s, server_problems[peerid])]]
-            return T.li["Server Problems:", l]
+                l(T.li("[%s]: %s" % (peerid_s, server_problems[peerid])))
+            return T.li("Server Problems:", l)
         d.addCallback(_got)
         return d
 
-    def data_file_size(self, ctx, data):
+    @renderer
+    def file_size(self, req, tag):
         d = self.download_results()
         d.addCallback(lambda res: res.file_size)
         return d
@@ -279,31 +285,40 @@ class DownloadResultsRendererMixin(RateAndTimeMixin):
         d.addCallback(lambda res: res.timings.get(name))
         return d
 
-    def data_time_total(self, ctx, data):
+    @renderer
+    def time_total(self, req, tag):
         return self._get_time("total")
 
-    def data_time_peer_selection(self, ctx, data):
+    @renderer
+    def time_peer_selection(self, req, tag):
         return self._get_time("peer_selection")
 
-    def data_time_uri_extension(self, ctx, data):
+    @renderer
+    def time_uri_extension(self, req, tag):
         return self._get_time("uri_extension")
 
-    def data_time_hashtrees(self, ctx, data):
+    @renderer
+    def time_hashtrees(self, req, tag):
         return self._get_time("hashtrees")
 
-    def data_time_segments(self, ctx, data):
+    @renderer
+    def time_segments(self, req, tag):
         return self._get_time("segments")
 
-    def data_time_cumulative_fetch(self, ctx, data):
+    @renderer
+    def time_cumulative_fetch(self, req, tag):
         return self._get_time("cumulative_fetch")
 
-    def data_time_cumulative_decode(self, ctx, data):
+    @renderer
+    def time_cumulative_decode(self, req, tag):
         return self._get_time("cumulative_decode")
 
-    def data_time_cumulative_decrypt(self, ctx, data):
+    @renderer
+    def time_cumulative_decrypt(self, req, tag):
         return self._get_time("cumulative_decrypt")
 
-    def data_time_paused(self, ctx, data):
+    @renderer
+    def time_paused(self, ctx, data):
         return self._get_time("paused")
 
     def _get_rate(self, name):
@@ -315,22 +330,28 @@ class DownloadResultsRendererMixin(RateAndTimeMixin):
         d.addCallback(_convert)
         return d
 
-    def data_rate_total(self, ctx, data):
+    @renderer
+    def rate_total(self, req, tag):
         return self._get_rate("total")
 
-    def data_rate_segments(self, ctx, data):
+    @renderer
+    def rate_segments(self, req, tag):
         return self._get_rate("segments")
 
-    def data_rate_fetch(self, ctx, data):
+    @renderer
+    def rate_fetch(self, req, tag):
         return self._get_rate("cumulative_fetch")
 
-    def data_rate_decode(self, ctx, data):
+    @renderer
+    def rate_decode(self, req, tag):
         return self._get_rate("cumulative_decode")
 
-    def data_rate_decrypt(self, ctx, data):
+    @renderer
+    def rate_decrypt(self, req, tag):
         return self._get_rate("cumulative_decrypt")
 
-    def render_server_timings(self, ctx, data):
+    @renderer
+    def server_timings(self, req, tag):
         d = self.download_results()
         d.addCallback(lambda res: res.timings.get("fetch_per_server"))
         def _render(per_server):
@@ -341,10 +362,12 @@ class DownloadResultsRendererMixin(RateAndTimeMixin):
                 peerid_s = idlib.shortnodeid_b2a(peerid)
                 times_s = ", ".join([self.render_time(None, t)
                                      for t in per_server[peerid]])
-                l[T.li["[%s]: %s" % (peerid_s, times_s)]]
-            return T.li["Per-Server Segment Fetch Response Times: ", l]
+                l(T.li("[%s]: %s" % (peerid_s, times_s)))
+            return T.li("Per-Server Segment Fetch Response Times: ", l)
         d.addCallback(_render)
         return d
+
+#------------------------------------------------------------------------
 
 def _find_overlap(events, start_key, end_key):
     """
@@ -493,14 +516,25 @@ class _EventJson(Resource, object):
         data["bounds"] = {"min": ds.first_timestamp, "max": ds.last_timestamp}
         return json.dumps(data, indent=1) + "\n"
 
+#------------------------------------------------------------------------
 
-class DownloadStatusPage(DownloadResultsRendererMixin):
-    docFactory = getxmlfile("download-status.xhtml")
+class DownloadStatusPage(DownloadResultsRendererMixin, MultiFormatResource):
 
     def __init__(self, data):
-        rend.Page.__init__(self, data)
+        super(DownloadStatusPage, self).__init__()
         self.download_status = data
         self.putChild("event_json", _EventJson(self.download_status))
+
+    def render_HTML(self, req):
+        return renderElement(req, DownloadStatusElement(self.download_status))
+
+class DownloadStatusElement(RateAndTimeMixin, Element):
+
+    loader = XMLFile(FilePath(__file__).sibling("download-status.xhtml"))
+
+    def __init__(self, download_status):
+        super(DownloadStatusElement, self).__init__()
+        self.download_status = download_status
 
     def download_results(self):
         return defer.maybeDeferred(self.download_status.get_results)
@@ -511,32 +545,35 @@ class DownloadStatusPage(DownloadResultsRendererMixin):
         if self.download_status.first_timestamp is not None:
             return t - self.download_status.first_timestamp
         return t
+
     def short_relative_time(self, t):
         t = self.relative_time(t)
         if t is None:
             return ""
         return "+%.6fs" % t
 
+    # TODO: this doesn't seem to be used.
     def render_timeline_link(self, ctx, data):
         from nevow import url
-        return T.a(href=url.URL.fromContext(ctx).child("timeline"))["timeline"]
+        return T.a("timeline", href=url.URL.fromContext(ctx).child("timeline"))
 
     def _rate_and_time(self, bytes, seconds):
         time_s = self.render_time(None, seconds)
         if seconds != 0:
             rate = self.render_rate(None, 1.0 * bytes / seconds)
-            return T.span(title=rate)[time_s]
-        return T.span[time_s]
+            return T.span(time_s, title=rate)
+        return T.span(time_s)
 
-    def render_events(self, ctx, data):
+    @renderer
+    def events(self, req, tag):
         if not self.download_status.storage_index:
             return
         srt = self.short_relative_time
         l = T.div()
 
         t = T.table(align="left", class_="status-download-events")
-        t[T.tr[T.th["serverid"], T.th["sent"], T.th["received"],
-               T.th["shnums"], T.th["RTT"]]]
+        t(T.tr(T.th("serverid"), T.th("sent"), T.th("received"),
+               T.th("shnums"), T.th("RTT")))
         for d_ev in self.download_status.dyhb_requests:
             server = d_ev["server"]
             sent = d_ev["start_time"]
@@ -547,19 +584,19 @@ class DownloadStatusPage(DownloadResultsRendererMixin):
                 rtt = received - sent
             if not shnums:
                 shnums = ["-"]
-            t[T.tr(style="background: %s" % _color(server))[
-                [T.td[server.get_name()], T.td[srt(sent)], T.td[srt(received)],
-                 T.td[",".join([str(shnum) for shnum in shnums])],
-                 T.td[self.render_time(None, rtt)],
-                 ]]]
+            t(T.tr(style="background: %s" % _color(server))(
+                (T.td(server.get_name()), T.td(srt(sent)), T.td(srt(received)),
+                 T.td(",".join([str(shnum) for shnum in shnums])),
+                 T.td(self.render_time(None, rtt)),
+                 )))
 
-        l[T.h2["DYHB Requests:"], t]
-        l[T.br(clear="all")]
+        l(T.h2("DYHB Requests:"), t)
+        l(T.br(clear="all"))
 
         t = T.table(align="left",class_="status-download-events")
-        t[T.tr[T.th["range"], T.th["start"], T.th["finish"], T.th["got"],
-               T.th["time"], T.th["decrypttime"], T.th["pausedtime"],
-               T.th["speed"]]]
+        t(T.tr(T.th("range"), T.th("start"), T.th("finish"), T.th("got"),
+               T.th("time"), T.th("decrypttime"), T.th("pausedtime"),
+               T.th("speed")))
         for r_ev in self.download_status.read_events:
             start = r_ev["start"]
             length = r_ev["length"]
@@ -574,20 +611,20 @@ class DownloadStatusPage(DownloadResultsRendererMixin):
                 rtt = self.render_time(None, rtt)
             paused = self.render_time(None, r_ev["paused_time"])
 
-            t[T.tr[T.td["[%d:+%d]" % (start, length)],
-                   T.td[srt(r_ev["start_time"])], T.td[srt(r_ev["finish_time"])],
-                   T.td[bytes], T.td[rtt],
-                   T.td[decrypt_time], T.td[paused],
-                   T.td[speed],
-                   ]]
+            t(T.tr(T.td("[%d:+%d]" % (start, length)),
+                   T.td(srt(r_ev["start_time"])), T.td(srt(r_ev["finish_time"])),
+                   T.td(bytes), T.td(rtt),
+                   T.td(decrypt_time), T.td(paused),
+                   T.td(speed),
+                   ))
 
-        l[T.h2["Read Events:"], t]
-        l[T.br(clear="all")]
+        l(T.h2("Read Events:"), t)
+        l(T.br(clear="all"))
 
         t = T.table(align="left",class_="status-download-events")
-        t[T.tr[T.th["segnum"], T.th["start"], T.th["active"], T.th["finish"],
-               T.th["range"],
-               T.th["decodetime"], T.th["segtime"], T.th["speed"]]]
+        t(T.tr(T.th("segnum"), T.th("start"), T.th("active"), T.th("finish"),
+               T.th("range"),
+               T.th("decodetime"), T.th("segtime"), T.th("speed")))
         for s_ev in self.download_status.segment_events:
             range_s = "-"
             segtime_s = "-"
@@ -608,40 +645,41 @@ class DownloadStatusPage(DownloadResultsRendererMixin):
                 # not finished yet
                 pass
 
-            t[T.tr[T.td["seg%d" % s_ev["segment_number"]],
-                   T.td[srt(s_ev["start_time"])],
-                   T.td[srt(s_ev["active_time"])],
-                   T.td[srt(s_ev["finish_time"])],
-                   T.td[range_s],
-                   T.td[decode_time],
-                   T.td[segtime_s], T.td[speed]]]
+            t(T.tr(T.td("seg%d" % s_ev["segment_number"]),
+                   T.td(srt(s_ev["start_time"])),
+                   T.td(srt(s_ev["active_time"])),
+                   T.td(srt(s_ev["finish_time"])),
+                   T.td(range_s),
+                   T.td(decode_time),
+                   T.td(segtime_s), T.td(speed)))
 
-        l[T.h2["Segment Events:"], t]
-        l[T.br(clear="all")]
+        l(T.h2("Segment Events:"), t)
+        l(T.br(clear="all"))
         t = T.table(align="left",class_="status-download-events")
-        t[T.tr[T.th["serverid"], T.th["shnum"], T.th["range"],
-               T.th["txtime"], T.th["rxtime"],
-               T.th["received"], T.th["RTT"]]]
+        t(T.tr(T.th("serverid"), T.th("shnum"), T.th("range"),
+               T.th("txtime"), T.th("rxtime"),
+               T.th("received"), T.th("RTT")))
         for r_ev in self.download_status.block_requests:
             server = r_ev["server"]
             rtt = None
             if r_ev["finish_time"] is not None:
                 rtt = r_ev["finish_time"] - r_ev["start_time"]
             color = _color(server)
-            t[T.tr(style="background: %s" % color)[
-                T.td[server.get_name()], T.td[r_ev["shnum"]],
-                T.td["[%d:+%d]" % (r_ev["start"], r_ev["length"])],
-                T.td[srt(r_ev["start_time"])], T.td[srt(r_ev["finish_time"])],
-                T.td[r_ev["response_length"] or ""],
-                T.td[self.render_time(None, rtt)],
-                ]]
+            t(T.tr(style="background: %s" % color)(
+                T.td(server.get_name()), T.td(r_ev["shnum"]),
+                T.td("[%d:+%d]" % (r_ev["start"], r_ev["length"])),
+                T.td(srt(r_ev["start_time"])), T.td(srt(r_ev["finish_time"])),
+                T.td(r_ev["response_length"] or ""),
+                T.td(self.render_time(None, rtt)),
+                ))
 
-        l[T.h2["Requests:"], t]
-        l[T.br(clear="all")]
+        l(T.h2("Requests:"), t)
+        l(T.br(clear="all"))
 
         return l
 
-    def render_results(self, ctx, data):
+    @renderer
+    def results(self, req, tag):
         d = self.download_results()
         def _got_results(results):
             if results:
@@ -650,39 +688,46 @@ class DownloadStatusPage(DownloadResultsRendererMixin):
         d.addCallback(_got_results)
         return d
 
-    def render_started(self, ctx, data):
-        started_s = render_time(data.get_started())
-        return started_s + " (%s)" % data.get_started()
+    @renderer
+    def started(self, req, tag):
+        started_s = render_time(self.download_status.get_started())
+        return started_s + " (%s)" % self.download_status.get_started()
 
-    def render_si(self, ctx, data):
-        si_s = base32.b2a_or_none(data.get_storage_index())
+    @renderer
+    def si(self, req, tag):
+        si_s = base32.b2a_or_none(self.download_status.get_storage_index())
         if si_s is None:
             si_s = "(None)"
         return si_s
 
-    def render_helper(self, ctx, data):
-        return {True: "Yes",
-                False: "No"}[data.using_helper()]
+    @renderer
+    def helper(self, req, tag):
+        return {True: "Yes", False: "No"}[self.download_status.using_helper()]
 
-    def render_total_size(self, ctx, data):
-        size = data.get_size()
+    @renderer
+    def total_size(self, req, tag):
+        size = self.download_status.get_size()
         if size is None:
             return "(unknown)"
         return size
 
-    def render_progress(self, ctx, data):
-        progress = data.get_progress()
+    @renderer
+    def progress(self, req, tag):
+        progress = self.download_status.get_progress()
         # TODO: make an ascii-art bar
         return "%.1f%%" % (100.0 * progress)
 
-    def render_status(self, ctx, data):
-        return data.get_status()
+    @renderer
+    def status(self, req, tag):
+        return self.download_status.get_status()
+
+#------------------------------------------------------------------------
 
 class RetrieveStatusPage(RateAndTimeMixin):
     docFactory = getxmlfile("retrieve-status.xhtml")
 
     def __init__(self, data):
-        rend.Page.__init__(self, data)
+        super(RetrieveStatusPage, self).__init__()
         self.retrieve_status = data
 
     def render_started(self, ctx, data):
