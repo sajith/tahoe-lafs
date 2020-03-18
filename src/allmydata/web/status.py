@@ -1026,13 +1026,13 @@ class Status(MultiFormatResource):
 
         return json.dumps(data, indent=1) + "\n"
 
-    def childFactory(self, ctx, name):
+    def getChild(self, path, request):
         h = self.history
         try:
-            stype, count_s = name.split("-")
+            stype, count_s = path.split("-")
         except ValueError:
             raise RuntimeError(
-                "no - in '{}'".format(name)
+                "no - in '{}'".format(path)
             )
         count = int(count_s)
         if stype == "up":
