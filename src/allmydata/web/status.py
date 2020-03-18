@@ -24,8 +24,13 @@ from allmydata.web.common import (
     MultiFormatResource,
     SlotsSequenceElement,
 )
-from allmydata.interfaces import IUploadStatus, IDownloadStatus, \
-     IPublishStatus, IRetrieveStatus, IServermapUpdaterStatus
+from allmydata.interfaces import (
+    IUploadStatus,
+    IDownloadStatus,
+    IPublishStatus,
+    IRetrieveStatus,
+    IServermapUpdaterStatus
+)
 
 class RateAndTimeMixin(object):
 
