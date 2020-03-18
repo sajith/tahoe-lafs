@@ -994,7 +994,9 @@ def marshal_json(s):
 
     return item
 
+#------------------------------------------------------------------------
 
+# Renders "/status" page
 class Status(MultiFormatResource):
     docFactory = getxmlfile("status.xhtml")
     addSlash = True
@@ -1159,6 +1161,9 @@ class StatusElement(Element):
                     return RetrieveStatusPage(s)
 
 
+#------------------------------------------------------------------------
+
+# Renders "/helper_status" page
 class HelperStatus(MultiFormatResource):
 
     def __init__(self, helper):
@@ -1244,7 +1249,9 @@ class HelperStatusElement(Element):
     def upload_bytes_encoded(self, req, tag):
         return str(self._data["chk_upload_helper.encoded_bytes"])
 
+#------------------------------------------------------------------------
 
+# Renders "/statistics" page.
 class Statistics(MultiFormatResource):
 
     def __init__(self, provider):
@@ -1367,3 +1374,5 @@ class StatisticsElement(Element):
     def raw(self, req, tag):
         raw = pprint.pformat(self._stats)
         return tag(raw)
+
+#------------------------------------------------------------------------
