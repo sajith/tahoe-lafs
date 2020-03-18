@@ -999,7 +999,6 @@ def marshal_json(s):
 # Renders "/status" page
 class Status(MultiFormatResource):
     docFactory = getxmlfile("status.xhtml")
-    addSlash = True
 
     def __init__(self, history):
         # rend.Page.__init__(self, history)
@@ -1027,6 +1026,17 @@ class Status(MultiFormatResource):
         return json.dumps(data, indent=1) + "\n"
 
     def getChild(self, path, request):
+        # The "if (path is empty) return self" line should handle
+        # trailing slash in request path.
+        #
+        # Twisted Web's documentation says this: "If the URL ends in a
+        # slash, for example ``http://example.com/foo/bar/`` , the
+        # final URL segment will be an empty string. Resources can
+        # thus know if they were requested with or without a final
+        # slash."
+        if not path:
+            return self
+
         h = self.history
         try:
             stype, count_s = path.split("-")
