@@ -165,12 +165,24 @@ class UploadResultsRendererMixin(RateAndTimeMixin):
         d.addCallback(_convert)
         return d
 
-class UploadStatusPage(UploadResultsRendererMixin):
-    docFactory = getxmlfile("upload-status.xhtml")
+#------------------------------------------------------------------------
+
+class UploadStatusPage(UploadResultsRendererMixin, MultiFormatResource):
 
     def __init__(self, data):
-        rend.Page.__init__(self, data)
+        super(UploadStatusPage, self).__init__()
         self.upload_status = data
+
+    def render_HTML(self, req):
+        return renderElement(req, UploadStatusElement(self.upload_status))
+
+class UploadStatusElement(Element):
+
+    loader = XMLFile(FilePath(__file__).sibling("upload-status.xhtml"))
+
+    def __init__(self, upload_status):
+        super(UploadStatusElement, self).__init__()
+        self.upload_status = upload_status
 
     def upload_results(self):
         return defer.maybeDeferred(self.upload_status.get_results)
