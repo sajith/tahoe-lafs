@@ -40,20 +40,27 @@ class RateAndTimeMixin(object):
     def render_rate(self, ctx, data):
         return abbreviate_rate(data)
 
-class UploadResultsRendererMixin(RateAndTimeMixin):
+#------------------------------------------------------------------------
+
+# UploadResultsRendererMixin is inherited by status.UploadResultsPage
+# (below), and unliked.UploadResultsPage.
+class UploadResultsRendererMixin(Element, RateAndTimeMixin):
     # this requires a method named 'upload_results'
 
-    def render_pushed_shares(self, ctx, data):
+    @renderer
+    def pushed_shares(self, req, tag):
         d = self.upload_results()
         d.addCallback(lambda res: res.get_pushed_shares())
         return d
 
-    def render_preexisting_shares(self, ctx, data):
+    @renderer
+    def preexisting_shares(self, req, tag):
         d = self.upload_results()
         d.addCallback(lambda res: res.get_preexisting_shares())
         return d
 
-    def render_sharemap(self, ctx, data):
+    @renderer
+    def sharemap(self, req, tag):
         d = self.upload_results()
         d.addCallback(lambda res: res.get_sharemap())
         def _render(sharemap):
@@ -62,12 +69,13 @@ class UploadResultsRendererMixin(RateAndTimeMixin):
             l = T.ul()
             for shnum, servers in sorted(sharemap.items()):
                 server_names = ', '.join([s.get_name() for s in servers])
-                l[T.li["%d -> placed on [%s]" % (shnum, server_names)]]
+                l(T.li["%d -> placed on [%s]" % (shnum, server_names)])
             return l
         d.addCallback(_render)
         return d
 
-    def render_servermap(self, ctx, data):
+    @renderer
+    def servermap(self, req, tag):
         d = self.upload_results()
         d.addCallback(lambda res: res.get_servermap())
         def _render(servermap):
@@ -76,13 +84,14 @@ class UploadResultsRendererMixin(RateAndTimeMixin):
             l = T.ul()
             for server, shnums in sorted(servermap.items()):
                 shares_s = ",".join(["#%d" % shnum for shnum in shnums])
-                l[T.li["[%s] got share%s: %s" % (server.get_name(),
-                                                 plural(shnums), shares_s)]]
+                l(T.li("[%s] got share%s: %s" % (server.get_name(),
+                                                 plural(shnums), shares_s)))
             return l
         d.addCallback(_render)
         return d
 
-    def data_file_size(self, ctx, data):
+    @renderer
+    def file_size(self, req, tag):
         d = self.upload_results()
         d.addCallback(lambda res: res.get_file_size())
         return d
@@ -92,34 +101,44 @@ class UploadResultsRendererMixin(RateAndTimeMixin):
         d.addCallback(lambda res: res.get_timings().get(name))
         return d
 
-    def data_time_total(self, ctx, data):
+    @renderer
+    def time_total(self, req, tag):
         return self._get_time("total")
 
-    def data_time_storage_index(self, ctx, data):
+    @renderer
+    def time_storage_index(self, req, tag):
         return self._get_time("storage_index")
 
-    def data_time_contacting_helper(self, ctx, data):
+    @renderer
+    def time_contacting_helper(self, req, tag):
         return self._get_time("contacting_helper")
 
-    def data_time_cumulative_fetch(self, ctx, data):
+    @renderer
+    def time_cumulative_fetch(self, req, tag):
         return self._get_time("cumulative_fetch")
 
-    def data_time_helper_total(self, ctx, data):
+    @renderer
+    def time_helper_total(self, req, tag):
         return self._get_time("helper_total")
 
-    def data_time_peer_selection(self, ctx, data):
+    @renderer
+    def time_peer_selection(self, req, tag):
         return self._get_time("peer_selection")
 
-    def data_time_total_encode_and_push(self, ctx, data):
+    @renderer
+    def time_total_encode_and_push(self, req, tag):
         return self._get_time("total_encode_and_push")
 
-    def data_time_cumulative_encoding(self, ctx, data):
+    @renderer
+    def time_cumulative_encoding(self, req, tag):
         return self._get_time("cumulative_encoding")
 
-    def data_time_cumulative_sending(self, ctx, data):
+    @renderer
+    def time_cumulative_sending(self, req, tag):
         return self._get_time("cumulative_sending")
 
-    def data_time_hashes_and_close(self, ctx, data):
+    @renderer
+    def time_hashes_and_close(self, req, tag):
         return self._get_time("hashes_and_close")
 
     def _get_rate(self, name):
@@ -131,19 +150,24 @@ class UploadResultsRendererMixin(RateAndTimeMixin):
         d.addCallback(_convert)
         return d
 
-    def data_rate_total(self, ctx, data):
+    @renderer
+    def rate_total(self, req, tag):
         return self._get_rate("total")
 
-    def data_rate_storage_index(self, ctx, data):
+    @renderer
+    def rate_storage_index(self, req, tag):
         return self._get_rate("storage_index")
 
-    def data_rate_encode(self, ctx, data):
+    @renderer
+    def data_rate_encode(self, req, tag):
         return self._get_rate("cumulative_encoding")
 
-    def data_rate_push(self, ctx, data):
+    @renderer
+    def rate_push(self, req, tag):
         return self._get_rate("cumulative_sending")
 
-    def data_rate_encode_and_push(self, ctx, data):
+    @renderer
+    def rate_encode_and_push(self, req, tag):
         d = self.upload_results()
         def _convert(r):
             file_size = r.get_file_size()
@@ -156,7 +180,8 @@ class UploadResultsRendererMixin(RateAndTimeMixin):
         d.addCallback(_convert)
         return d
 
-    def data_rate_ciphertext_fetch(self, ctx, data):
+    @renderer
+    def rate_ciphertext_fetch(self, req, tag):
         d = self.upload_results()
         def _convert(r):
             fetch_size = r.get_ciphertext_fetched()
@@ -167,7 +192,7 @@ class UploadResultsRendererMixin(RateAndTimeMixin):
 
 #------------------------------------------------------------------------
 
-class UploadStatusPage(UploadResultsRendererMixin, MultiFormatResource):
+class UploadStatusPage(MultiFormatResource):
 
     def __init__(self, data):
         super(UploadStatusPage, self).__init__()
@@ -176,7 +201,7 @@ class UploadStatusPage(UploadResultsRendererMixin, MultiFormatResource):
     def render_HTML(self, req):
         return renderElement(req, UploadStatusElement(self.upload_status))
 
-class UploadStatusElement(Element):
+class UploadStatusElement(UploadResultsRendererMixin):
 
     loader = XMLFile(FilePath(__file__).sibling("upload-status.xhtml"))
 
@@ -187,52 +212,61 @@ class UploadStatusElement(Element):
     def upload_results(self):
         return defer.maybeDeferred(self.upload_status.get_results)
 
-    def render_results(self, ctx, data):
+    @renderer
+    def results(self, req, tag):
         d = self.upload_results()
         def _got_results(results):
             if results:
-                return ctx.tag
+                return tag
             return ""
         d.addCallback(_got_results)
         return d
 
-    def render_started(self, ctx, data):
-        started_s = render_time(data.get_started())
+    @renderer
+    def started(self, req, tag):
+        started_s = render_time(self.upload_status.get_started())
         return started_s
 
-    def render_si(self, ctx, data):
-        si_s = base32.b2a_or_none(data.get_storage_index())
+    @renderer
+    def si(self, req, tag):
+        si_s = base32.b2a_or_none(self.upload_status.get_storage_index())
         if si_s is None:
             si_s = "(None)"
         return si_s
 
-    def render_helper(self, ctx, data):
+    @renderer
+    def helper(self, req, tag):
         return {True: "Yes",
-                False: "No"}[data.using_helper()]
+                False: "No"}[self.upload_status.using_helper()]
 
-    def render_total_size(self, ctx, data):
-        size = data.get_size()
+    @renderer
+    def total_size(self, req, tag):
+        size = self.upload_status.get_size()
         if size is None:
             return "(unknown)"
         return size
 
-    def render_progress_hash(self, ctx, data):
-        progress = data.get_progress()[0]
+    @renderer
+    def progress_hash(self, req, tag):
+        progress = self.upload_status.get_progress()[0]
         # TODO: make an ascii-art bar
         return "%.1f%%" % (100.0 * progress)
 
-    def render_progress_ciphertext(self, ctx, data):
-        progress = data.get_progress()[1]
+    @renderer
+    def progress_ciphertext(self, req, tag):
+        progress = self.upload_status.get_progress()[1]
         # TODO: make an ascii-art bar
         return "%.1f%%" % (100.0 * progress)
 
-    def render_progress_encode_push(self, ctx, data):
-        progress = data.get_progress()[2]
+    @renderer
+    def progress_encode_push(self, req, tag):
+        progress = self.upload_status.get_progress()[2]
         # TODO: make an ascii-art bar
         return "%.1f%%" % (100.0 * progress)
 
-    def render_status(self, ctx, data):
-        return data.get_status()
+    @renderer
+    def status(self, req, tag):
+        return self.upload_status.get_status()
 
 #------------------------------------------------------------------------
 
@@ -930,69 +964,104 @@ class PublishStatusPage(RateAndTimeMixin):
             l[T.li["[%s]: %s" % (server.get_name(), times_s)]]
         return T.li["Per-Server Response Times: ", l]
 
-class MapupdateStatusPage(RateAndTimeMixin):
-    docFactory = getxmlfile("map-update-status.xhtml")
+#------------------------------------------------------------------------
+
+class MapupdateStatusPage(MultiFormatResource):
 
     def __init__(self, data):
-        rend.Page.__init__(self, data)
+        super(MapupdateStatusPage, self).__init__()
         self.update_status = data
 
-    def render_started(self, ctx, data):
-        started_s = render_time(data.get_started())
+    def render_HTML(self, req):
+        elem = MapupdateStatusElement(self.update_status);
+        return renderElement(req, elem)
+
+class MapupdateStatusElement(RateAndTimeMixin, Element):
+
+    loader = XMLFile(FilePath(__file__).sibling("map-update-status.xhtml"))
+
+    def __init__(self, update_status):
+        super(MapupdateStatusElement, self).__init__()
+        self.update_status = update_status
+
+    @renderer
+    def started(self, req, tag):
+        started_s = render_time(self.update_status.get_started())
         return started_s
 
-    def render_finished(self, ctx, data):
-        when = data.get_finished()
+    @renderer
+    def finished(self, req, tag):
+        when = self.update_status.get_finished()
         if not when:
             return "not yet"
-        started_s = render_time(data.get_finished())
+        started_s = render_time(self.update_status.get_finished())
         return started_s
 
-    def render_si(self, ctx, data):
-        si_s = base32.b2a_or_none(data.get_storage_index())
+    @renderer
+    def si(self, req, tag):
+        si_s = base32.b2a_or_none(self.update_status.get_storage_index())
         if si_s is None:
             si_s = "(None)"
         return si_s
 
-    def render_helper(self, ctx, data):
+    @renderer
+    def helper(self, req, tag):
         return {True: "Yes",
-                False: "No"}[data.using_helper()]
+                False: "No"}[self.update_status.using_helper()]
 
-    def render_progress(self, ctx, data):
-        progress = data.get_progress()
+    @renderer
+    def progress(self, req, tag):
+        progress = self.update_status.get_progress()
         # TODO: make an ascii-art bar
         return "%.1f%%" % (100.0 * progress)
 
-    def render_status(self, ctx, data):
-        return data.get_status()
+    @renderer
+    def status(self, req, tag):
+        return self.update_status.get_status()
 
-    def render_problems(self, ctx, data):
-        problems = data.problems
+    @renderer
+    def problems(self, req, tag):
+        problems = self.update_status.problems
         if not problems:
             return ""
         l = T.ul()
         for peerid in sorted(problems.keys()):
             peerid_s = idlib.shortnodeid_b2a(peerid)
-            l[T.li["[%s]: %s" % (peerid_s, problems[peerid])]]
-        return ctx.tag["Server Problems:", l]
+            l(T.li("[%s]: %s" % (peerid_s, problems[peerid])))
+        return tag("Server Problems:", l)
 
-    def render_privkey_from(self, ctx, data):
-        server = data.get_privkey_from()
+    @renderer
+    def privkey_from(self, req, tag):
+        server = self.update_status.get_privkey_from()
         if server:
-            return ctx.tag["Got privkey from: [%s]" % server.get_name()]
+            return tag("Got privkey from: [%s]" % server.get_name())
         else:
             return ""
 
-    def data_time_total(self, ctx, data):
-        return self.update_status.timings.get("total")
+    # Querying `update_status.timings` can return `None` or numeric
+    # values, but twisted.web has trouble flattening the element tree
+    # when such values are present.  Stringifying them seems to help,
+    # hence this function.
+    def _get_update_status_timing(self, name, tag):
+        res = self.update_status.timings.get(name)
+        if not res:
+            return tag
+        return tag(str(res))
 
-    def data_time_initial_queries(self, ctx, data):
-        return self.update_status.timings.get("initial_queries")
+    @renderer
+    def time_total(self, req, tag):
+        return self._get_update_status_timing("total", tag)
 
-    def data_time_cumulative_verify(self, ctx, data):
-        return self.update_status.timings.get("cumulative_verify")
+    @renderer
+    def time_initial_queries(self, req, tag):
+        return self._get_update_status_timing("initial_queries", tag)
 
-    def render_server_timings(self, ctx, data):
+    @renderer
+    def time_cumulative_verify(self, req, tag):
+        return self._get_update_status_timing("cumulative_verify", tag)
+
+    @renderer
+    def server_timings(self, req, tag):
         per_server = self.update_status.timings.get("per_server")
         if not per_server:
             return ""
@@ -1011,9 +1080,10 @@ class MapupdateStatusPage(RateAndTimeMixin):
                 else:
                     times.append( "privkey(" + self.render_time(None, t) + ")" )
             times_s = ", ".join(times)
-            l[T.li["[%s]: %s" % (server.get_name(), times_s)]]
-        return T.li["Per-Server Response Times: ", l]
+            l(T.li("[%s]: %s" % (server.get_name(), times_s)))
+        return T.li("Per-Server Response Times: ", l)
 
+#------------------------------------------------------------------------
 
 def marshal_json(s):
     # common item data
