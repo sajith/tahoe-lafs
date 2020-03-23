@@ -2,7 +2,16 @@
 import urllib
 from twisted.web import http
 from twisted.internet import defer
-from nevow import rend, url, tags as T
+from nevow import url
+from twisted.python.filepath import FilePath
+from twisted.web.template import (
+    Element,
+    XMLFile,
+    renderer,
+    renderElement,
+    tags as T,
+)
+from allmydata.web.common import MultiFormatResource
 from allmydata.immutable.upload import FileHandle
 from allmydata.mutable.publish import MutableFileHandle
 from allmydata.web.common import getxmlfile, get_arg, boolean_of_arg, \
@@ -59,32 +68,63 @@ def POSTUnlinkedCHK(req, client):
     return d
 
 
-class UploadResultsPage(status.UploadResultsRendererMixin, rend.Page):
+class UploadResultsPage(MultiFormatResource):
     """'POST /uri', to create an unlinked file."""
-    docFactory = getxmlfile("upload-results.xhtml")
 
     def __init__(self, upload_results):
-        rend.Page.__init__(self)
         self.results = upload_results
+
+    def render_HTML(self, req):
+        return renderElement(req, UploadResultsElement(self.results))
+
+    # This is weird but necessary because:
+    #
+    #  1. MultiFormatResource.render() uses argument "t" to figure out
+    #     its output format.
+    #
+    #  2. Upload request is of the form "POST /uri?t=upload&file=newfile".
+    #     See URIHandler.render_POST().
+    #
+    # MultiFormatResource.render() looks up "t" argument, which in
+    # this case has the value "upload", and then it would look for a
+    # render_UPLOAD() method.
+    #
+    # We could probably change upload request to use a more
+    # descriptive name that don't cause name collisions like this, but
+    # that should be a separate change.
+    render_UPLOAD = render_HTML
+
+# Note that status.UploadResultsRendererMixin is a subclass of
+# twisted.web.template.Element.
+class UploadResultsElement(status.UploadResultsRendererMixin):
+
+    loader = XMLFile(FilePath(__file__).sibling("upload-results.xhtml"))
+
+    def __init__(self, results):
+        super(UploadResultsElement, self).__init__()
+        self.results = results
 
     def upload_results(self):
         return defer.succeed(self.results)
 
-    def data_done(self, ctx, data):
+    @renderer
+    def done(self, req, tag):
         d = self.upload_results()
-        d.addCallback(lambda res: "done!")
+        d.addCallback(lambda res: tag("done!"))
         return d
 
-    def data_uri(self, ctx, data):
+    @renderer
+    def uri(self, req, tag):
         d = self.upload_results()
-        d.addCallback(lambda res: res.get_uri())
+        d.addCallback(lambda res: tag(res.get_uri()))
         return d
 
-    def render_download_link(self, ctx, data):
+    @renderer
+    def download_link(self, req, tag):
         d = self.upload_results()
         d.addCallback(lambda res:
-                      T.a(href="/uri/" + urllib.quote(res.get_uri()))
-                      ["/uri/" + res.get_uri()])
+                      tag(T.a("/uri/" + res.get_uri(),
+                              href="/uri/" + urllib.quote(res.get_uri()))))
         return d
 
 def POSTUnlinkedSSK(req, client, version):
