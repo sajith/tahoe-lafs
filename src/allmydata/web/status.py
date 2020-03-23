@@ -50,13 +50,13 @@ class UploadResultsRendererMixin(Element, RateAndTimeMixin):
     @renderer
     def pushed_shares(self, req, tag):
         d = self.upload_results()
-        d.addCallback(lambda res: tag(res.get_pushed_shares()))
+        d.addCallback(lambda res: tag(str(res.get_pushed_shares())))
         return d
 
     @renderer
     def preexisting_shares(self, req, tag):
         d = self.upload_results()
-        d.addCallback(lambda res: tag(res.get_preexisting_shares()))
+        d.addCallback(lambda res: tag(str(res.get_preexisting_shares())))
         return d
 
     @renderer
@@ -244,7 +244,7 @@ class UploadStatusElement(UploadResultsRendererMixin):
         size = self.upload_status.get_size()
         if size is None:
             return "(unknown)"
-        return size
+        return tag(str(size))
 
     @renderer
     def progress_hash(self, req, tag):
