@@ -50,13 +50,13 @@ class UploadResultsRendererMixin(Element, RateAndTimeMixin):
     @renderer
     def pushed_shares(self, req, tag):
         d = self.upload_results()
-        d.addCallback(lambda res: res.get_pushed_shares())
+        d.addCallback(lambda res: tag(res.get_pushed_shares()))
         return d
 
     @renderer
     def preexisting_shares(self, req, tag):
         d = self.upload_results()
-        d.addCallback(lambda res: res.get_preexisting_shares())
+        d.addCallback(lambda res: tag(res.get_preexisting_shares()))
         return d
 
     @renderer
@@ -65,12 +65,12 @@ class UploadResultsRendererMixin(Element, RateAndTimeMixin):
         d.addCallback(lambda res: res.get_sharemap())
         def _render(sharemap):
             if sharemap is None:
-                return "None"
+                return tag("None")
             l = T.ul()
             for shnum, servers in sorted(sharemap.items()):
                 server_names = ', '.join([s.get_name() for s in servers])
-                l(T.li["%d -> placed on [%s]" % (shnum, server_names)])
-            return l
+                l(T.li("%d -> placed on [%s]" % (shnum, server_names)))
+            return tag(l)
         d.addCallback(_render)
         return d
 
@@ -80,91 +80,91 @@ class UploadResultsRendererMixin(Element, RateAndTimeMixin):
         d.addCallback(lambda res: res.get_servermap())
         def _render(servermap):
             if servermap is None:
-                return "None"
+                return tag("None")
             l = T.ul()
             for server, shnums in sorted(servermap.items()):
                 shares_s = ",".join(["#%d" % shnum for shnum in shnums])
                 l(T.li("[%s] got share%s: %s" % (server.get_name(),
                                                  plural(shnums), shares_s)))
-            return l
+            return tag(l)
         d.addCallback(_render)
         return d
 
     @renderer
     def file_size(self, req, tag):
         d = self.upload_results()
-        d.addCallback(lambda res: res.get_file_size())
+        d.addCallback(lambda res: tag(str(res.get_file_size())))
         return d
 
     def _get_time(self, name):
         d = self.upload_results()
-        d.addCallback(lambda res: res.get_timings().get(name))
+        d.addCallback(lambda res: str(res.get_timings().get(name)))
         return d
 
     @renderer
     def time_total(self, req, tag):
-        return self._get_time("total")
+        return tag(self._get_time("total"))
 
     @renderer
     def time_storage_index(self, req, tag):
-        return self._get_time("storage_index")
+        return tag(self._get_time("storage_index"))
 
     @renderer
     def time_contacting_helper(self, req, tag):
-        return self._get_time("contacting_helper")
+        return tag(self._get_time("contacting_helper"))
 
     @renderer
     def time_cumulative_fetch(self, req, tag):
-        return self._get_time("cumulative_fetch")
+        return tag(self._get_time("cumulative_fetch"))
 
     @renderer
     def time_helper_total(self, req, tag):
-        return self._get_time("helper_total")
+        return tag(self._get_time("helper_total"))
 
     @renderer
     def time_peer_selection(self, req, tag):
-        return self._get_time("peer_selection")
+        return tag(self._get_time("peer_selection"))
 
     @renderer
     def time_total_encode_and_push(self, req, tag):
-        return self._get_time("total_encode_and_push")
+        return tag(self._get_time("total_encode_and_push"))
 
     @renderer
     def time_cumulative_encoding(self, req, tag):
-        return self._get_time("cumulative_encoding")
+        return tag(self._get_time("cumulative_encoding"))
 
     @renderer
     def time_cumulative_sending(self, req, tag):
-        return self._get_time("cumulative_sending")
+        return tag(self._get_time("cumulative_sending"))
 
     @renderer
     def time_hashes_and_close(self, req, tag):
-        return self._get_time("hashes_and_close")
+        return tag(self._get_time("hashes_and_close"))
 
     def _get_rate(self, name):
         d = self.upload_results()
         def _convert(r):
             file_size = r.get_file_size()
             duration = r.get_timings().get(name)
-            return compute_rate(file_size, duration)
+            return str(compute_rate(file_size, duration))
         d.addCallback(_convert)
         return d
 
     @renderer
     def rate_total(self, req, tag):
-        return self._get_rate("total")
+        return tag(self._get_rate("total"))
 
     @renderer
     def rate_storage_index(self, req, tag):
-        return self._get_rate("storage_index")
+        return tag(self._get_rate("storage_index"))
 
     @renderer
-    def data_rate_encode(self, req, tag):
-        return self._get_rate("cumulative_encoding")
+    def rate_encode(self, req, tag):
+        return tag(self._get_rate("cumulative_encoding"))
 
     @renderer
     def rate_push(self, req, tag):
-        return self._get_rate("cumulative_sending")
+        return tag(self._get_rate("cumulative_sending"))
 
     @renderer
     def rate_encode_and_push(self, req, tag):
@@ -174,9 +174,9 @@ class UploadResultsRendererMixin(Element, RateAndTimeMixin):
             time1 = r.get_timings().get("cumulative_encoding")
             time2 = r.get_timings().get("cumulative_sending")
             if (time1 is None or time2 is None):
-                return None
+                return tag
             else:
-                return compute_rate(file_size, time1+time2)
+                return tag(str(compute_rate(file_size, time1+time2)))
         d.addCallback(_convert)
         return d
 
@@ -186,7 +186,7 @@ class UploadResultsRendererMixin(Element, RateAndTimeMixin):
         def _convert(r):
             fetch_size = r.get_ciphertext_fetched()
             duration = r.get_timings().get("cumulative_fetch")
-            return compute_rate(fetch_size, duration)
+            return tag(str(compute_rate(fetch_size, duration)))
         d.addCallback(_convert)
         return d
 
