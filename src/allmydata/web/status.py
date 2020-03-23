@@ -931,7 +931,7 @@ class PublishStatusElement(Element, RateAndTimeMixin):
         size = self.publish_status.get_size()
         if size is None:
             size = "(unknown)"
-        return size
+        return tag(str(size))
 
     @renderer
     def progress(self, req, tag):
