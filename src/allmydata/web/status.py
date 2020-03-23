@@ -1387,8 +1387,8 @@ class HelperStatus(MultiFormatResource):
 
     def render_JSON(self, req):
         req.setHeader("content-type", "text/plain")
-        if self.helper:
-            stats = self.helper.get_stats()
+        if self._helper:
+            stats = self._helper.get_stats()
             return json.dumps(stats, indent=1) + "\n"
         return json.dumps({}) + "\n"
 
