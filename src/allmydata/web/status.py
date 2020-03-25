@@ -1157,7 +1157,14 @@ class HelperStatusElement(Element):
         :param _allmydata.immutable.offloaded.Helper helper: an upload helper.
         """
         super(HelperStatusElement, self).__init__()
-        self._helper_stats = helper.get_stats()
+        self._helper = helper
+
+    @renderer
+    def helper_running(self, req, tag):
+        if self._helper:
+            self._helper_stats = self._helper.get_stats()
+            return tag
+        return tags.h1("No helper is running")
 
     def data_helper_stats(self, ctx, data):
         return self.helper.get_stats()
