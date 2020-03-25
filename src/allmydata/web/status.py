@@ -2,7 +2,15 @@
 import pprint, itertools, hashlib
 import json
 from twisted.internet import defer
+from twisted.python.filepath import FilePath
 from twisted.web.resource import Resource
+from twisted.web.template import (
+    Element,
+    XMLFile,
+    renderer,
+    renderElement,
+    tags
+)
 from nevow import rend, tags as T
 from allmydata.util import base32, idlib
 from allmydata.web.common import (
@@ -14,6 +22,7 @@ from allmydata.web.common import (
     compute_rate,
     render_time,
     MultiFormatPage,
+    MultiFormatResource,
 )
 from allmydata.interfaces import IUploadStatus, IDownloadStatus, \
      IPublishStatus, IRetrieveStatus, IServermapUpdaterStatus
@@ -1120,49 +1129,72 @@ class Status(MultiFormatPage):
                 if s.get_counter() == count:
                     return RetrieveStatusPage(s)
 
+#------------------------------------------------------------------------
 
-class HelperStatus(MultiFormatPage):
-    docFactory = getxmlfile("helper.xhtml")
+class HelperStatus(MultiFormatResource):
+    """Renders "/helper_status" page."""
 
     def __init__(self, helper):
-        rend.Page.__init__(self, helper)
-        self.helper = helper
+        super(HelperStatus, self).__init__()
+        self._helper = helper
+
+    def render_HTML(self, req):
+        return renderElement(req, HelperStatusElement(self._helper))
+
+    def render_JSON(self, req):
+        req.setHeader("content-type", "text/plain")
+        if self._helper:
+            stats = self._helper.get_stats()
+            return json.dumps(stats, indent=1) + "\n"
+        return json.dumps({}) + "\n"
+
+class HelperStatusElement(Element):
+
+    loader = XMLFile(FilePath(__file__).sibling("helper.xhtml"))
+
+    def __init__(self, helper):
+        """
+        :param _allmydata.immutable.offloaded.Helper helper: an upload helper.
+        """
+        super(HelperStatusElement, self).__init__()
+        self._helper_stats = helper.get_stats()
 
     def data_helper_stats(self, ctx, data):
         return self.helper.get_stats()
 
-    def render_JSON(self, req):
-        req.setHeader("content-type", "text/plain")
-        if self.helper:
-            stats = self.helper.get_stats()
-            return json.dumps(stats, indent=1) + "\n"
-        return json.dumps({}) + "\n"
+    @renderer
+    def active_uploads(self, req, tag):
+        return str(self._helper_stats["chk_upload_helper.active_uploads"])
 
-    def render_active_uploads(self, ctx, data):
-        return data["chk_upload_helper.active_uploads"]
+    @renderer
+    def incoming(self, req, tag):
+        return "%d bytes in %d files" % (self._helper_stats["chk_upload_helper.incoming_size"],
+                                         self._helper_stats["chk_upload_helper.incoming_count"])
 
-    def render_incoming(self, ctx, data):
-        return "%d bytes in %d files" % (data["chk_upload_helper.incoming_size"],
-                                         data["chk_upload_helper.incoming_count"])
+    @renderer
+    def encoding(self, req, tag):
+        return "%d bytes in %d files" % (self._helper_stats["chk_upload_helper.encoding_size"],
+                                         self._helper_stats["chk_upload_helper.encoding_count"])
 
-    def render_encoding(self, ctx, data):
-        return "%d bytes in %d files" % (data["chk_upload_helper.encoding_size"],
-                                         data["chk_upload_helper.encoding_count"])
+    @renderer
+    def upload_requests(self, req, tag):
+        return str(self._helper_stats["chk_upload_helper.upload_requests"])
 
-    def render_upload_requests(self, ctx, data):
-        return str(data["chk_upload_helper.upload_requests"])
+    @renderer
+    def upload_already_present(self, req, tag):
+        return str(self._helper_stats["chk_upload_helper.upload_already_present"])
 
-    def render_upload_already_present(self, ctx, data):
-        return str(data["chk_upload_helper.upload_already_present"])
+    @renderer
+    def upload_need_upload(self, req, tag):
+        return str(self._helper_stats["chk_upload_helper.upload_need_upload"])
 
-    def render_upload_need_upload(self, ctx, data):
-        return str(data["chk_upload_helper.upload_need_upload"])
+    @renderer
+    def upload_bytes_fetched(self, req, tag):
+        return str(self._helper_stats["chk_upload_helper.fetched_bytes"])
 
-    def render_upload_bytes_fetched(self, ctx, data):
-        return str(data["chk_upload_helper.fetched_bytes"])
-
-    def render_upload_bytes_encoded(self, ctx, data):
-        return str(data["chk_upload_helper.encoded_bytes"])
+    @renderer
+    def upload_bytes_encoded(self, req, tag):
+        return str(self._helper_stats["chk_upload_helper.encoded_bytes"])
 
 
 class Statistics(MultiFormatPage):
