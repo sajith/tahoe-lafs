@@ -1155,6 +1155,27 @@ class HelperStatusElement(Element):
     def __init__(self, helper):
         """
         :param _allmydata.immutable.offloaded.Helper helper: an upload helper.
+
+        Helper.get_stats() returns a dict of this form:
+
+          { 'chk_upload_helper.active_uploads': 0,
+            'chk_upload_helper.encoded_bytes': 0,
+            'chk_upload_helper.encoding_count': 0,
+            'chk_upload_helper.encoding_size': 0,
+            'chk_upload_helper.encoding_size_old': 0,
+            'chk_upload_helper.fetched_bytes': 0,
+            'chk_upload_helper.incoming_count': 0,
+            'chk_upload_helper.incoming_size': 0,
+            'chk_upload_helper.incoming_size_old': 0,
+            'chk_upload_helper.resumes': 0,
+            'chk_upload_helper.upload_already_present': 0,
+            'chk_upload_helper.upload_need_upload': 0,
+            'chk_upload_helper.upload_requests': 0 }
+
+        If helper is running, we render the above data on the page.
+        If no helper is running, we print a message indicating as
+        such.
+
         """
         super(HelperStatusElement, self).__init__()
         self._helper = helper
