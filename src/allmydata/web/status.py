@@ -1187,41 +1187,44 @@ class HelperStatusElement(Element):
             return tag
         return tags.h1("No helper is running")
 
-    def data_helper_stats(self, ctx, data):
-        return self.helper.get_stats()
-
     @renderer
-    def active_uploads(self, req, tag):
+    def helper_stats(self, req, tag):
+        tag.fillSlots(
+            active_uploads         = self._active_uploads(),
+            upload_bytes_fetched   = self._upload_bytes_fetched(),
+            incoming               = self._incoming(),
+            encoding               = self._encoding(),
+            upload_bytes_encoded   = self._upload_bytes_encoded(),
+            upload_requests        = self._upload_requests(),
+            upload_already_present = self._upload_already_present(),
+            upload_need_upload     = self._upload_need_upload()
+        )
+        return tag
+
+    def _active_uploads(self):
         return str(self._helper_stats["chk_upload_helper.active_uploads"])
 
-    @renderer
-    def incoming(self, req, tag):
+    def _incoming(self):
         return "%d bytes in %d files" % (self._helper_stats["chk_upload_helper.incoming_size"],
                                          self._helper_stats["chk_upload_helper.incoming_count"])
 
-    @renderer
-    def encoding(self, req, tag):
+    def _encoding(self):
         return "%d bytes in %d files" % (self._helper_stats["chk_upload_helper.encoding_size"],
                                          self._helper_stats["chk_upload_helper.encoding_count"])
 
-    @renderer
-    def upload_requests(self, req, tag):
+    def _upload_requests(self):
         return str(self._helper_stats["chk_upload_helper.upload_requests"])
 
-    @renderer
-    def upload_already_present(self, req, tag):
+    def _upload_already_present(self):
         return str(self._helper_stats["chk_upload_helper.upload_already_present"])
 
-    @renderer
-    def upload_need_upload(self, req, tag):
+    def _upload_need_upload(self):
         return str(self._helper_stats["chk_upload_helper.upload_need_upload"])
 
-    @renderer
-    def upload_bytes_fetched(self, req, tag):
+    def _upload_bytes_fetched(self):
         return str(self._helper_stats["chk_upload_helper.fetched_bytes"])
 
-    @renderer
-    def upload_bytes_encoded(self, req, tag):
+    def _upload_bytes_encoded(self):
         return str(self._helper_stats["chk_upload_helper.encoded_bytes"])
 
 
