@@ -12,7 +12,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six txaio twisted zope_interface cffi cryptography pynacl ] ++
-    (lib.optionals (!isPy3k) [ trollius futures ]);
+    (lib.optionals (!isPy3k) [ futures ]);
 
   checkInputs = [ mock pytest ];
   checkPhase = ''
