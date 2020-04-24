@@ -3,7 +3,7 @@
 , twisted, foolscap, nevow, zfec
 , setuptools, setuptoolsTrial, pyasn1, zope_interface
 , service-identity, pyyaml, magic-wormhole, treq, appdirs
-, beautifulsoup4, eliot, autobahn, cryptography
+, beautifulsoup4, eliot, cryptography
 , html5lib
 }:
 python.pkgs.buildPythonPackage rec {
