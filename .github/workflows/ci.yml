@@ -59,6 +59,8 @@ jobs:
           name: eliot.log
           path: eliot.log
 
+      # testing codecov, don't merge: make a PR and kick ci
+        
       # Upload this job's coverage data to Coveralls.  While there is a GitHub
       # Action for this, as of Jan 2021 it does not support Python coverage
       # files - only lcov files.  Therefore, we use coveralls-python, the
