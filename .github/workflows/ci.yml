@@ -59,8 +59,6 @@ jobs:
           name: eliot.log
           path: eliot.log
 
-      # testing codecov, don't merge: make a PR and kick ci
-        
       # Upload this job's coverage data to Coveralls.  While there is a GitHub
       # Action for this, as of Jan 2021 it does not support Python coverage
       # files - only lcov files.  Therefore, we use coveralls-python, the
@@ -73,7 +71,7 @@ jobs:
           # Some magic value required for some magic reason.
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           # Help coveralls identify our project.
-          COVERALLS_REPO_TOKEN: "JPf16rLB7T2yjgATIxFzTsEgMdN1UNq6o"
+          COVERALLS_REPO_TOKEN: "QYoETxGMjCXkFstKHhdsL5dhAtU2tL5Wv"
           # Every source of coverage reports needs a unique "flag name".
           # Construct one by smashing a few variables from the matrix together
           # here.
