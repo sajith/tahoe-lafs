@@ -70,6 +70,7 @@ jobs:
         env:
           # Some magic value required for some magic reason.
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          # Kick CI again.  
           # Help coveralls identify our project.
           COVERALLS_REPO_TOKEN: "QYoETxGMjCXkFstKHhdsL5dhAtU2tL5Wv"
           # Every source of coverage reports needs a unique "flag name".
