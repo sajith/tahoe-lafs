@@ -5,7 +5,10 @@ from future.utils import PY2
 if PY2:
     import _winreg
 else:
+    # In Python 3, the module formerly known as `_winreg` is `winreg`,
+    # and `xrange` has been renamed to `range`.
     import winreg as _winreg
+    xrange = range
 
 _AMD_KEY = r"Software\Allmydata"
 _BDIR_KEY = 'Base Dir Path'
