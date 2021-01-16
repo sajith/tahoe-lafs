@@ -11,6 +11,7 @@ import sys
 # See the docs/about.rst file for licensing information.
 
 import os, subprocess, re
+from io import open
 
 basedir = os.path.dirname(os.path.abspath(__file__))
 
