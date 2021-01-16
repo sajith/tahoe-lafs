@@ -1,5 +1,11 @@
 from __future__ import print_function
 
+from future.utils import PY3
+
+if PY3:
+    # In Python 3, xrange has been renamed to range.
+    xrange = range
+
 done = False
 
 def initialize():
